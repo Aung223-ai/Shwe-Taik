@@ -34,7 +34,6 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 INSTALLED_APPS = [
     'app.apps.AppConfig',
     'category',
-    'channels',
     'django.contrib.humanize',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -76,7 +75,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'app.wsgi.application'
-ASGI_APPLICATION = 'app.asgi.application'
 
 
 # Database
@@ -137,11 +135,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
-    }
-}
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media') 
 
 # Production Security Settings
