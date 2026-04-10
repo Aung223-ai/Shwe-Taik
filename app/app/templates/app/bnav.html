@@ -1,0 +1,51 @@
+<div class="container-xl px-0">
+    <div class="bg-danger rounded-pill p-2 shadow mx-auto">
+        <div class="row g-1">
+            <div class="col">
+                <a class="btn w-100 rounded-pill {% if request.resolver_match.url_name == 'home' %}btn-light text-danger{% else %}btn-danger text-white{% endif %}" href="{% url 'home' %}">
+                    <i class="bi bi-house-fill d-block"></i>
+                    <span class="small">Home</span>
+                </a>
+            </div>
+            <div class="col">
+                <a class="btn w-100 rounded-pill {% if request.resolver_match.url_name == 'all-cats' %}btn-light text-danger{% else %}btn-danger text-white{% endif %}" href="{% url 'all-cats' %}">
+                    <i class="bi bi-grid-1x2-fill d-block"></i>
+                    <span class="small">Categories</span>
+                </a>
+            </div>
+            {% if request.user.is_authenticated %}
+            <div class="col">
+                <a class="btn w-100 rounded-pill {% if request.resolver_match.url_name == 'favorites' %}btn-light text-danger{% else %}btn-danger text-white{% endif %}" href="{% url 'favorites' %}">
+                    <i class="bi bi-heart-fill d-block"></i>
+                    <span class="small">Favorites</span>
+                </a>
+            </div>
+            <div class="col">
+                {% if user_role == 'admin' or user_role == 'staff' %}
+                <a class="btn w-100 rounded-pill position-relative {% if request.resolver_match.url_name == 'message-center' %}btn-light text-danger{% else %}btn-danger text-white{% endif %}" href="{% url 'message-center' %}">
+                {% else %}
+                <a class="btn w-100 rounded-pill position-relative {% if request.resolver_match.url_name == 'messages' %}btn-light text-danger{% else %}btn-danger text-white{% endif %}" href="{% url 'messages' %}">
+                {% endif %}
+                    <i class="bi bi-chat-fill d-block"></i>
+                    <span class="small">Chat</span>
+                    {% if chat_unread_count > 0 %}
+                    <span class="position-absolute top-0 start-100 translate-middle p-1 bg-white border border-danger rounded-circle">
+                        <span class="visually-hidden">Unread chat</span>
+                    </span>
+                    {% endif %}
+                </a>
+            </div>
+            {% endif %}
+            <div class="col">
+                {% if request.user.is_authenticated %}
+                <a class="btn w-100 rounded-pill {% if request.resolver_match.url_name == 'profile' %}btn-light text-danger{% else %}btn-danger text-white{% endif %}" href="{% url 'profile' %}">
+                {% else %}
+                <a class="btn w-100 rounded-pill {% if request.resolver_match.url_name == 'login' %}btn-light text-danger{% else %}btn-danger text-white{% endif %}" href="{% url 'login' %}">
+                {% endif %}
+                    <i class="bi bi-person-fill d-block"></i>
+                    <span class="small">Profile</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

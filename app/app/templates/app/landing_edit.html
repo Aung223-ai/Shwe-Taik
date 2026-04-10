@@ -1,0 +1,95 @@
+{% extends 'app/base.html' %}
+{% block content %}
+
+<div class="col-12 col-md-10 col-lg-8 mx-auto">
+    <div class="mt-4 mb-2 d-flex align-items-center justify-content-between sticky-back">
+        <div class="fw-semibold">Edit Landing</div>
+        <a class="btn btn-outline-danger rounded-4" href="{% url 'landing' %}">
+            <i class="bi bi-arrow-left me-1"></i>Back
+        </a>
+    </div>
+
+    <form method="post" class="vstack gap-3">
+        {% csrf_token %}
+        <div class="card rounded-4 shadow-sm border-0 p-3">
+            <div class="fw-semibold mb-2">Hero</div>
+            <input class="form-control rounded-5 mb-2" name="hero_title" placeholder="Hero title" value="{{ landing.hero_title }}">
+            <input class="form-control rounded-5 mb-2" name="hero_subtitle" placeholder="Hero subtitle" value="{{ landing.hero_subtitle }}">
+            <input class="form-control rounded-5" name="trust_line" placeholder="Trust line" value="{{ landing.trust_line }}">
+        </div>
+
+        <div class="card rounded-4 shadow-sm border-0 p-3">
+            <div class="fw-semibold mb-2">About / Mission / Vision / Services</div>
+            <textarea class="form-control rounded-5 mb-2" name="about_text" rows="2" placeholder="About">{{ landing.about_text }}</textarea>
+            <textarea class="form-control rounded-5 mb-2" name="mission_text" rows="2" placeholder="Mission">{{ landing.mission_text }}</textarea>
+            <textarea class="form-control rounded-5 mb-2" name="vision_text" rows="2" placeholder="Vision">{{ landing.vision_text }}</textarea>
+            <textarea class="form-control rounded-5" name="services_text" rows="2" placeholder="Services">{{ landing.services_text }}</textarea>
+        </div>
+
+        <div class="card rounded-4 shadow-sm border-0 p-3">
+            <div class="fw-semibold mb-2">Projects</div>
+            <input class="form-control rounded-5 mb-2" name="projects_1" value="{{ landing.projects_1 }}">
+            <input class="form-control rounded-5 mb-2" name="projects_2" value="{{ landing.projects_2 }}">
+            <input class="form-control rounded-5" name="projects_3" value="{{ landing.projects_3 }}">
+        </div>
+
+        <div class="card rounded-4 shadow-sm border-0 p-3">
+            <div class="fw-semibold mb-2">Activities</div>
+            <input class="form-control rounded-5 mb-2" name="activities_1" value="{{ landing.activities_1 }}">
+            <input class="form-control rounded-5 mb-2" name="activities_2" value="{{ landing.activities_2 }}">
+            <input class="form-control rounded-5" name="activities_3" value="{{ landing.activities_3 }}">
+        </div>
+
+        <div class="card rounded-4 shadow-sm border-0 p-3">
+            <div class="fw-semibold mb-2">Testimonials</div>
+            <input class="form-control rounded-5 mb-2" name="testimonial_1" value="{{ landing.testimonial_1 }}">
+            <input class="form-control rounded-5 mb-2" name="testimonial_2" value="{{ landing.testimonial_2 }}">
+            <input class="form-control rounded-5" name="testimonial_3" value="{{ landing.testimonial_3 }}">
+        </div>
+
+        <div class="card rounded-4 shadow-sm border-0 p-3">
+            <div class="fw-semibold mb-2">Partners</div>
+            <input class="form-control rounded-5 mb-2" name="partner_1" value="{{ landing.partner_1 }}">
+            <input class="form-control rounded-5 mb-2" name="partner_2" value="{{ landing.partner_2 }}">
+            <input class="form-control rounded-5 mb-2" name="partner_3" value="{{ landing.partner_3 }}">
+            <input class="form-control rounded-5" name="partner_4" value="{{ landing.partner_4 }}">
+        </div>
+
+        <div class="card rounded-4 shadow-sm border-0 p-3">
+            <div class="fw-semibold mb-2">FAQ</div>
+            <input class="form-control rounded-5 mb-2" name="faq1_q" value="{{ landing.faq1_q }}" placeholder="FAQ 1 Question">
+            <input class="form-control rounded-5 mb-2" name="faq1_a" value="{{ landing.faq1_a }}" placeholder="FAQ 1 Answer">
+            <input class="form-control rounded-5 mb-2" name="faq2_q" value="{{ landing.faq2_q }}" placeholder="FAQ 2 Question">
+            <input class="form-control rounded-5" name="faq2_a" value="{{ landing.faq2_a }}" placeholder="FAQ 2 Answer">
+        </div>
+
+        <div class="card rounded-4 shadow-sm border-0 p-3">
+            <div class="fw-semibold mb-2">Newsletter</div>
+            <input class="form-control rounded-5" name="newsletter_text" value="{{ landing.newsletter_text }}">
+        </div>
+
+        <div class="card rounded-4 shadow-sm border-0 p-3">
+            <div class="fw-semibold mb-2">Contact</div>
+            <input class="form-control rounded-5 mb-2" name="contact_phone" value="{{ landing.contact_phone }}" placeholder="Phone">
+            <input class="form-control rounded-5 mb-2" name="contact_email" value="{{ landing.contact_email }}" placeholder="Email">
+            <input class="form-control rounded-5" name="contact_address" value="{{ landing.contact_address }}" placeholder="Address">
+        </div>
+
+        <div class="card rounded-4 shadow-sm border-0 p-3">
+            <div class="fw-semibold mb-2">Careers</div>
+            <input class="form-control rounded-5" name="careers_text" value="{{ landing.careers_text }}">
+        </div>
+
+        <div class="card rounded-4 shadow-sm border-0 p-3">
+            <div class="fw-semibold mb-2">CTA</div>
+            <input class="form-control rounded-5 mb-2" name="cta_title" value="{{ landing.cta_title }}" placeholder="CTA Title">
+            <input class="form-control rounded-5" name="cta_button_text" value="{{ landing.cta_button_text }}" placeholder="CTA Button">
+        </div>
+
+        <button class="btn btn-danger rounded-pill w-100" type="submit">
+            <i class="bi bi-check-circle me-1"></i>Save Changes
+        </button>
+    </form>
+</div>
+
+{% endblock %}

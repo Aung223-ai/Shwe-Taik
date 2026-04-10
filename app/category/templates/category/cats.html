@@ -1,0 +1,129 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+    <div class="d-flex gap-2">
+        <a class="btn btn-danger rounded-pill px-3" href="{% url 'all-cats' %}">
+            <i class="bi bi-grid-1x2-fill me-1"></i>Categories
+        </a>
+        <a class="btn btn-outline-secondary rounded-pill px-3" href="{% url 'all-sub-cats' %}">
+            <i class="bi bi-bag-fill me-1"></i>Products
+        </a>
+    </div>
+    <div class="ms-md-auto d-flex flex-wrap gap-2">
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary rounded-pill dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-filter me-1"></i>Sort
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item {% if sort == 'name_asc' %}active{% endif %}" href="?sort=name_asc">A-Z</a></li>
+                <li><a class="dropdown-item {% if sort == 'name_desc' %}active{% endif %}" href="?sort=name_desc">Z-A</a></li>
+                <li><a class="dropdown-item {% if sort == 'newest' %}active{% endif %}" href="?sort=newest">Newest</a></li>
+            </ul>
+        </div>
+        {% if request.user.is_authenticated %}
+        <a class="btn btn-outline-secondary rounded-pill" href="{% url 'cat-create' %}">
+            <i class="bi bi-plus-lg me-1"></i>Add
+        </a>
+        <a class="btn btn-outline-secondary rounded-pill" href="{% url 'cat-edit-list' %}">
+            <i class="bi bi-pencil-square me-1"></i>Edit
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-5 g-3" id="catGrid">
+    {% for cat in cats %}
+    <div class="col cat-item" {% if can_reorder_cats %}draggable="true"{% endif %} data-cat-id="{{ cat.id }}">
+        <a href="{% url 'cat-products' cat.id %}" class="text-decoration-none text-dark">
+            <div class="card h-100 border-0 shadow-sm rounded-4 position-relative">
+                {% if can_reorder_cats %}
+                <span class="position-absolute top-0 end-0 m-2 badge rounded-pill bg-light text-secondary border">
+                    <i class="bi bi-grip-vertical"></i>
+                </span>
+                {% endif %}
+                <div class="ratio ratio-1x1">
+                    <img class="w-100 h-100 object-fit-cover rounded-top-4" src="{{ cat.image.url }}" alt="{{ cat.name }}">
+                </div>
+                <div class="card-body text-center">
+                    <div class="fw-semibold small">{{ cat.name }}</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+{% if can_reorder_cats %}
+<script>
+    const grid = document.getElementById('catGrid');
+    let draggingEl = null;
+
+    function getCookie(name) {
+        const v = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(name + '='));
+        return v ? decodeURIComponent(v.split('=').slice(1).join('=')) : '';
+    }
+
+    async function saveOrder() {
+        const ids = Array.from(grid.querySelectorAll('.cat-item[data-cat-id]'))
+            .map(el => parseInt(el.dataset.catId, 10))
+            .filter(n => Number.isFinite(n));
+        try {
+            await fetch("{% url 'cats-reorder' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: JSON.stringify({ ids }),
+            });
+        } catch (e) {}
+    }
+
+    function getAfterElement(container, y) {
+        const els = [...container.querySelectorAll('.cat-item:not(.dragging)')];
+        let closest = { offset: Number.NEGATIVE_INFINITY, element: null };
+        for (const child of els) {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) {
+                closest = { offset, element: child };
+            }
+        }
+        return closest.element;
+    }
+
+    if (grid) {
+        grid.addEventListener('dragstart', (e) => {
+            const item = e.target.closest('.cat-item');
+            if (!item) return;
+            draggingEl = item;
+            item.classList.add('dragging', 'opacity-50');
+            e.dataTransfer.effectAllowed = 'move';
+            try { e.dataTransfer.setData('text/plain', item.dataset.catId || ''); } catch (_) {}
+        });
+
+        grid.addEventListener('dragend', async (e) => {
+            const item = e.target.closest('.cat-item');
+            if (item) item.classList.remove('dragging', 'opacity-50');
+            draggingEl = null;
+            await saveOrder();
+        });
+
+        grid.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const cur = draggingEl;
+            if (!cur) return;
+            const afterEl = getAfterElement(grid, e.clientY);
+            if (afterEl == null) {
+                grid.appendChild(cur);
+            } else if (afterEl !== cur) {
+                grid.insertBefore(cur, afterEl);
+            }
+        });
+    }
+</script>
+{% endif %}
+
+{% endblock %}

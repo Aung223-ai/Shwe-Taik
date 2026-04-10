@@ -1,0 +1,57 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% load humanize %}
+{% block content %}
+
+<div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary rounded-pill px-3" href="{% url 'all-cats' %}">
+            <i class="bi bi-grid-1x2-fill me-1"></i>Categories
+        </a>
+        <a class="btn btn-danger rounded-pill px-3" href="{% url 'all-sub-cats' %}">
+            <i class="bi bi-bag-fill me-1"></i>Products
+        </a>
+    </div>
+    <div class="ms-md-auto d-flex flex-wrap gap-2">
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary rounded-pill dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-filter me-1"></i>Sort
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item {% if sort == 'name_asc' %}active{% endif %}" href="?sort=name_asc">A-Z</a></li>
+                <li><a class="dropdown-item {% if sort == 'name_desc' %}active{% endif %}" href="?sort=name_desc">Z-A</a></li>
+                <li><a class="dropdown-item {% if sort == 'price_asc' %}active{% endif %}" href="?sort=price_asc">Price Low to High</a></li>
+                <li><a class="dropdown-item {% if sort == 'price_desc' %}active{% endif %}" href="?sort=price_desc">Price High to Low</a></li>
+                <li><a class="dropdown-item {% if sort == 'newest' %}active{% endif %}" href="?sort=newest">Newest</a></li>
+            </ul>
+        </div>
+        {% if request.user.is_authenticated %}
+        <a class="btn btn-outline-secondary rounded-pill" href="{% url 'sub-create' %}">
+            <i class="bi bi-plus-lg me-1"></i>Add
+        </a>
+        <a class="btn btn-outline-secondary rounded-pill" href="{% url 'sub-edit-list' %}">
+            <i class="bi bi-pencil-square me-1"></i>Edit
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-5 g-3">
+    {% for sub in subs %}
+    <div class="col">
+        <a href="{% url 'sub-detail' sub.id %}" class="text-decoration-none text-dark">
+            <div class="card h-100 border-0 shadow-sm rounded-4">
+                <div class="ratio ratio-1x1">
+                    <img class="w-100 h-100 object-fit-cover rounded-top-4" src="{{ sub.image.url }}" alt="{{ sub.name }}">
+                </div>
+                <div class="card-body text-center">
+                    <div class="fw-semibold small">{{ sub.name }}</div>
+                    <div class="text-secondary small">{{ sub.price|floatformat:0|intcomma }} ks</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

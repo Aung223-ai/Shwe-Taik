@@ -1,0 +1,35 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% load humanize %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="fw-semibold">{{ cat.name }} Products</div>
+    <a class="btn btn-outline-danger rounded-pill" href="{% url 'all-cats' %}">
+        <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+</div>
+
+<div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-5 g-3">
+    {% for sub in products %}
+    <div class="col">
+        <a href="{% url 'sub-detail' sub.id %}" class="text-decoration-none text-dark">
+            <div class="card h-100 border-0 shadow-sm rounded-4">
+                <div class="ratio ratio-1x1">
+                    <img class="w-100 h-100 object-fit-cover rounded-top-4" src="{{ sub.image.url }}" alt="">
+                </div>
+                <div class="card-body text-center">
+                    <div class="fw-semibold small">{{ sub.name }}</div>
+                    <div class="text-secondary small">{{ sub.price|floatformat:0|intcomma }} ks</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="text-muted small">No products yet.</div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

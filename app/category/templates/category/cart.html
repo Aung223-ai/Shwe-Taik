@@ -1,0 +1,207 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% load humanize %}
+{% block content %}
+
+<div class="mb-3">
+    <div class="fw-semibold">{% if is_staff_view %}Orders{% else %}Cart{% endif %}</div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-md-10 col-lg-8">
+        {% if is_staff_view %}
+        <div class="card rounded-4 shadow-sm border-0">
+            <div class="card-body">
+                {% for order in orders %}
+                <div class="card rounded-4 mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <div>
+                                <div class="fw-semibold">Order #{{ order.id }} · {{ order.user.username }}</div>
+                                <div class="text-muted small">
+                                    Payment: {{ order.get_payment_method_display }}
+                                    {% if order.payment_method == 'kpay' and order.kpay_screenshot %}
+                                    · <a href="{{ order.kpay_screenshot.url }}" target="_blank" class="text-decoration-none">KPay Screenshot</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="small text-muted text-end">{{ order.created_at|date:"M d, Y H:i" }}</div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div class="fw-semibold text-secondary">{{ order.total|floatformat:0|intcomma }} ks</div>
+                            <span class="badge {% if order.status == 'pending' %}bg-secondary{% elif order.status == 'accepted' %}bg-primary{% elif order.status == 'delivered' %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ order.get_status_display }}
+                            </span>
+                        </div>
+
+                        <div class="mt-3">
+                            <div class="text-muted small fw-semibold mb-2">Items</div>
+                            {% for it in order.items.all %}
+                            <div class="d-flex justify-content-between align-items-center border-top pt-2 mt-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="{{ it.product.image.url }}" width="42" height="42" class="rounded object-fit-cover" alt="">
+                                    <div>
+                                        <div class="fw-semibold small">{{ it.product.name }}</div>
+                                        <div class="text-muted small">Qty: {{ it.quantity }}</div>
+                                    </div>
+                                </div>
+                                <div class="text-muted small">{{ it.price|floatformat:0|intcomma }} ks</div>
+                            </div>
+                            {% empty %}
+                            <div class="text-muted small">No items.</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            <form method="post" action="{% url 'order-update-status' order.id 'accepted' %}">
+                                {% csrf_token %}
+                                <button class="btn btn-outline-primary rounded-pill btn-sm" {% if order.status != 'pending' %}disabled{% endif %}>
+                                    <i class="bi bi-check2-circle me-1"></i>Accept
+                                </button>
+                            </form>
+                            <form method="post" action="{% url 'order-update-status' order.id 'delivered' %}">
+                                {% csrf_token %}
+                                <button class="btn btn-outline-success rounded-pill btn-sm" {% if order.status != 'accepted' %}disabled{% endif %}>
+                                    <i class="bi bi-truck me-1"></i>Delivered
+                                </button>
+                            </form>
+                            <form method="post" action="{% url 'order-update-status' order.id 'cancelled' %}">
+                                {% csrf_token %}
+                                <button class="btn btn-outline-danger rounded-pill btn-sm" {% if order.status == 'delivered' or order.status == 'cancelled' %}disabled{% endif %}>
+                                    <i class="bi bi-x-circle me-1"></i>Cancel
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-muted text-center py-4">
+                    <i class="bi bi-inboxes fs-1 d-block mb-2"></i>
+                    No customer orders yet.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div class="card rounded-4 shadow-sm border-0 mb-4">
+            <div class="card-body p-3 p-md-4">
+                {% if items %}
+                {% if error %}
+                <div class="alert alert-danger py-2">{{ error }}</div>
+                {% endif %}
+
+                {% for item in items %}
+                <div class="d-flex justify-content-between align-items-center border-bottom py-3 gap-3">
+                    <a class="d-flex align-items-center gap-3 text-decoration-none text-dark flex-grow-1" href="{% url 'sub-detail' item.product.id %}">
+                        <img src="{{ item.product.image.url }}" width="56" height="56" class="rounded-3 object-fit-cover shadow-sm" alt="">
+                        <div class="overflow-hidden">
+                            <div class="fw-semibold text-truncate">{{ item.product.name }}</div>
+                            <div class="text-secondary small">{{ item.product.price|floatformat:0|intcomma }} ks</div>
+                        </div>
+                    </a>
+                    <div class="d-flex align-items-center gap-1">
+                        <a class="btn btn-outline-secondary rounded-pill btn-sm p-1" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;" href="{% url 'update-cart' item.id 'dec' %}">
+                            <i class="bi bi-dash"></i>
+                        </a>
+                        <div class="fw-semibold px-2">{{ item.quantity }}</div>
+                        <a class="btn btn-outline-secondary rounded-pill btn-sm p-1" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;" href="{% url 'update-cart' item.id 'inc' %}">
+                            <i class="bi bi-plus"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <div class="d-flex justify-content-between align-items-center mt-3 pt-2">
+                    <div class="fw-semibold">Total Amount</div>
+                    <div class="fw-semibold text-danger fs-5">{{ total|floatformat:0|intcomma }} ks</div>
+                </div>
+
+                <form method="post" enctype="multipart/form-data" class="mt-4">
+                    {% csrf_token %}
+                    <div class="fw-semibold mb-3">Payment Method</div>
+                    <div class="d-grid d-sm-flex flex-wrap gap-2 mb-3">
+                        <label class="btn btn-outline-secondary rounded-pill text-start p-2 px-3">
+                            <input type="radio" name="payment_method" value="cod" class="form-check-input me-2" required>
+                            <i class="bi bi-cash-coin me-1"></i>Cash on Delivery
+                        </label>
+                        <label class="btn btn-outline-secondary rounded-pill text-start p-2 px-3">
+                            <input type="radio" name="payment_method" value="kpay" class="form-check-input me-2" required>
+                            <i class="bi bi-receipt me-1"></i>KPay Screenshot
+                        </label>
+                    </div>
+
+                    <div id="kpayUpload" class="mt-2 d-none">
+                        <div class="alert alert-light border small text-muted mb-2">Please upload your payment screenshot below.</div>
+                        <input type="file" name="kpay_screenshot" class="form-control form-control-sm" accept="image/*">
+                    </div>
+
+                    <button class="btn btn-danger rounded-pill w-100 mt-4 py-2">
+                        <i class="bi bi-send-fill me-1"></i>Confirm Order
+                    </button>
+                </form>
+                {% else %}
+                <div class="text-muted text-center py-4">
+                    <i class="bi bi-cart-x fs-1 d-block mb-2"></i>
+                    Your cart is empty.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div>
+            <div class="fw-semibold mb-2">Recent Orders</div>
+            <div class="row g-3">
+                {% for order in recent_orders %}
+                <div class="col-12">
+                    <div class="card rounded-4">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start gap-2">
+                                <div>
+                                    <div class="fw-semibold">Order #{{ order.id }}</div>
+                                    <div class="text-muted small">Payment: {{ order.get_payment_method_display }}</div>
+                                </div>
+                                <div class="small text-muted text-end">{{ order.created_at|date:"M d, Y" }}</div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div class="fw-semibold text-secondary">{{ order.total|floatformat:0|intcomma }} ks</div>
+                                <span class="badge {% if order.status == 'pending' %}bg-secondary{% elif order.status == 'accepted' %}bg-primary{% elif order.status == 'delivered' %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ order.get_status_display }}
+                                </span>
+                            </div>
+                            <div class="d-flex justify-content-end mt-3">
+                                <a class="btn btn-outline-secondary rounded-pill btn-sm" href="{% url 'messages' %}?draft=Can%20I%20cancel%20Order%20%23{{ order.id }}%3F">
+                                    <i class="bi bi-chat-dots me-1"></i>Can I cancel?
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="text-muted small">No orders yet.</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    const radios = document.querySelectorAll('input[name="payment_method"]');
+    const upload = document.getElementById('kpayUpload');
+
+    radios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            if (!upload) return;
+            if (radio.value === 'kpay' && radio.checked) {
+                upload.classList.remove('d-none');
+            } else if (radio.checked) {
+                upload.classList.add('d-none');
+            }
+        });
+    });
+</script>
+
+{% endblock %}

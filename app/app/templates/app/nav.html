@@ -1,0 +1,25 @@
+{% load static %}
+
+<nav class="navbar bg-white border-bottom sticky-top shadow-sm">
+    <div class="container-xl px-2 px-sm-3 px-lg-4">
+        <a class="navbar-brand fw-bold text-danger d-flex align-items-center" href="{% url 'landing' %}">
+            <img class="me-2 rounded" width="25" height="25" src="{% static 'app/images/favicon.png' %}" alt="Shwe Taik">
+            SHWE TAIK
+        </a>
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-outline-secondary rounded-pill" type="button" aria-label="Search">
+                <i class="bi bi-search"></i>
+            </button>
+            {% if request.user.is_authenticated %}
+            <a class="btn btn-outline-secondary rounded-pill position-relative" href="{% url 'cart' %}" aria-label="Cart">
+                <i class="bi bi-cart-fill"></i>
+                {% if cart_count > 0 %}
+                <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+                    <span class="visually-hidden">Items in cart</span>
+                </span>
+                {% endif %}
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</nav>

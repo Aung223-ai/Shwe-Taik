@@ -1,0 +1,31 @@
+{% extends 'app/base.html' %}
+{% block content %}
+
+<div class="col-12 col-md-10 col-lg-8 mx-auto">
+    <div class="mt-4 mb-2 d-flex align-items-center justify-content-between sticky-back">
+        <div class="fw-semibold">Edit Home</div>
+        <a class="btn btn-outline-danger rounded-4" href="{% url 'home' %}">
+            <i class="bi bi-arrow-left me-1"></i>Back
+        </a>
+    </div>
+
+    <form method="post" class="vstack gap-3" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="card rounded-4 shadow-sm border-0 p-3">
+            <div class="fw-semibold mb-2">Hero Media</div>
+            <div class="text-muted small mb-2">Upload 3 photos for hero slideshow.</div>
+            <label class="form-label small">Photo 1</label>
+            <input class="form-control rounded-5 mb-2" type="file" name="hero_photo_1" accept="image/*">
+            <label class="form-label small">Photo 2</label>
+            <input class="form-control rounded-5 mb-2" type="file" name="hero_photo_2" accept="image/*">
+            <label class="form-label small">Photo 3</label>
+            <input class="form-control rounded-5" type="file" name="hero_photo_3" accept="image/*">
+        </div>
+
+        <button class="btn btn-danger rounded-pill w-100" type="submit">
+            <i class="bi bi-check-circle me-1"></i>Save Changes
+        </button>
+    </form>
+</div>
+
+{% endblock %}

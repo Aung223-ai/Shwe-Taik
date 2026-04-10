@@ -1,0 +1,120 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-md-11 col-lg-10">
+    <div class="mt-2 mt-md-4">
+        <h4 class="mb-1">Profile</h4>
+        <div class="text-muted small">Welcome, {{ request.user.username }}</div>
+    </div>
+
+    {% if request.user.is_superuser %}
+    <div class="mt-3">
+        <div class="fw-semibold mb-2">Analytics</div>
+        <div class="row g-2 g-md-3">
+            <div class="col-6 col-md-3">
+                <div class="p-2 p-md-3 bg-white rounded-4 text-center border h-100">
+                    <div class="fw-semibold">{{ favorites_count }}</div>
+                    <div class="text-muted small">Favorites</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-2 p-md-3 bg-white rounded-4 text-center border h-100">
+                    <div class="fw-semibold">{{ cart_count }}</div>
+                    <div class="text-muted small">Cart Items</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-2 p-md-3 bg-white rounded-4 text-center border h-100">
+                    <div class="fw-semibold">{{ orders_count }}</div>
+                    <div class="text-muted small">Orders</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-2 p-md-3 bg-white rounded-4 text-center border h-100">
+                    <div class="fw-semibold">{{ total_spent|floatformat:0 }}</div>
+                    <div class="text-muted small">Total Spent</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-2 p-md-3 bg-white rounded-4 text-center border h-100">
+                    <div class="fw-semibold">{{ messages_count }}</div>
+                    <div class="text-muted small">Messages</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <div class="fw-semibold mb-2">Admin Dashboard</div>
+        <div class="row g-2 g-md-3">
+            <div class="col-6 col-md-3">
+                <div class="p-2 p-md-3 bg-white rounded-4 text-center border h-100">
+                    <div class="fw-semibold">{{ admin_total_users }}</div>
+                    <div class="text-muted small">Total Users</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-2 p-md-3 bg-white rounded-4 text-center border h-100">
+                    <div class="fw-semibold">{{ admin_active_users }}</div>
+                    <div class="text-muted small">Active Users</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-2 p-md-3 bg-white rounded-4 text-center border h-100">
+                    <div class="fw-semibold">{{ admin_staff_count }}</div>
+                    <div class="text-muted small">Staff Users</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-2 p-md-3 bg-white rounded-4 text-center border h-100">
+                    <div class="fw-semibold">{{ admin_total_hearts }}</div>
+                    <div class="text-muted small">Total Hearts</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="card shadow-sm border-0 rounded-4 mt-3">
+        <div class="card-body p-3 p-md-4">
+            <div class="fw-semibold mb-2">Account Info</div>
+            <div class="row g-2">
+                <div class="col-12 col-sm-6 text-muted small">Account ID: {{ request.user.id }}</div>
+                <div class="col-12 col-sm-6 text-muted small">Username: {{ request.user.username }}</div>
+                <div class="col-12 col-sm-6 text-muted small">Name: {{ request.user.first_name|default:"-" }}</div>
+                <div class="col-12 col-sm-6 text-muted small">Email: {{ request.user.email|default:"-" }}</div>
+                <div class="col-12 col-sm-6 text-muted small">Phone: {{ profile.phone|default:"-" }}</div>
+                <div class="col-12 col-sm-6 text-muted small">Address: {{ profile.address|default:"-" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <div class="fw-semibold mb-2">Quick Actions</div>
+        <div class="d-grid d-md-flex flex-wrap gap-2">
+            <a href="{% url 'profile-edit' %}" class="btn btn-outline-secondary btn-sm rounded-pill">
+                <i class="bi bi-pencil-square me-1"></i>Edit Profile
+            </a>
+            <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm rounded-pill">
+                <i class="bi bi-box-arrow-right me-1"></i>Logout
+            </a>
+        </div>
+    </div>
+
+    <div class="mt-4 mb-5">
+        <div class="fw-semibold mb-2">Support & Settings</div>
+        <div class="d-grid d-md-flex flex-wrap gap-2">
+            <a href="{% url 'messages' %}" class="btn btn-outline-primary btn-sm rounded-pill">
+                <i class="bi bi-chat-dots me-1"></i>Chat Support
+            </a>
+            <a href="{% url 'landing' %}#faq" class="btn btn-outline-secondary btn-sm rounded-pill">
+                <i class="bi bi-question-circle me-1"></i>FAQ
+            </a>
+        </div>
+    </div>
+</div>
+</div>
+
+{% endblock %}
