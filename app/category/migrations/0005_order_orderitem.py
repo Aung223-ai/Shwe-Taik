@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
                 ('quantity', models.PositiveIntegerField(default=1)),
                 ('price', models.FloatField(default=0)),
                 ('order', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='items', to='category.order')),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='category.subcategory')),
+                ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='category.SubCategory')),
             ],
         ),
     ]
