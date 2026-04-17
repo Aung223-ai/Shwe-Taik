@@ -29,7 +29,7 @@ def home_view(request):
     from category.models import SubCategory
     from category.models import Favorite
     from django.contrib.auth.models import User
-    from .models import HomeContent, HomeSection
+    from .models import HomeContent, HomeSection, HomeCarouselImage
     home_content, _ = HomeContent.objects.get_or_create(id=1)
     sections = HomeSection.objects.all().order_by('created_at')
 
@@ -69,6 +69,7 @@ def home_view(request):
     recommended = home_products[6:12]
 
     home_pairs = [{'product': p, 'fav_id': fav_map.get(p.id)} for p in home_products]
+    carousel_images = home_content.carousel_images.all().order_by('created_at')
     return render(request, 'app/home.html', {
         'home_pairs': home_pairs,
         'best_sellers': best_sellers,
@@ -77,6 +78,7 @@ def home_view(request):
         'can_reorder_home': bool(request.user.is_authenticated and (request.user.is_superuser or request.user.is_staff)),
         'home_content': home_content,
         'sections': sections,
+        'carousel_images': carousel_images,
     })
 
 
@@ -117,9 +119,8 @@ def home_reorder(request):
 
 
 def landing_view(request):
-    from .models import LandingContent
-    landing, _ = LandingContent.objects.get_or_create(id=1)
-    return render(request, 'app/landing.html', {'hide_top_nav': True, 'landing': landing})
+    # landing object ကို context processor ကနေ ရနေမှာဖြစ်လို့ view မှာ ထပ်ခေါ်စရာမလိုတော့ပါ
+    return render(request, 'app/landing.html')
 
 
 @login_required(login_url='login')
@@ -159,20 +160,49 @@ def landing_edit_view(request):
         landing.careers_text = request.POST.get('careers_text', '').strip()
         landing.cta_title = request.POST.get('cta_title', '').strip()
         landing.cta_button_text = request.POST.get('cta_button_text', '').strip()
+        
+        if request.FILES.get('favicon'):
+            landing.favicon = request.FILES.get('favicon')
+        if request.FILES.get('logo'):
+            landing.logo = request.FILES.get('logo')
+        if request.FILES.get('background_media'):
+            landing.background_media = request.FILES.get('background_media')
+        if request.POST.get('clear_background') == '1':
+            landing.background_media = None
+        if request.FILES.get('background_media_mobile'):
+            landing.background_media_mobile = request.FILES.get('background_media_mobile')
+        if request.POST.get('clear_background_mobile') == '1':
+            landing.background_media_mobile = None
+        try:
+            opacity = float(request.POST.get('background_opacity', 0.35))
+            landing.background_opacity = max(0.0, min(1.0, opacity))
+        except (ValueError, TypeError):
+            pass
         landing.save()
+        from django.core.cache import cache
+        cache.delete('landing_content')
         messages.success(request, 'Landing updated.')
         return redirect('landing')
-    return render(request, 'app/landing_edit.html', {'landing': landing, 'hide_top_nav': True})
+    return render(request, 'app/landing_edit.html', {'landing': landing})
 
 
 @login_required(login_url='login')
 @user_passes_test(lambda u: u.is_superuser, login_url='home')
 def home_edit_view(request):
-    from .models import HomeContent, HomeSection
+    from .models import HomeContent, HomeSection, HomeCarouselImage
     from category.models import SubCategory
     home_content, _ = HomeContent.objects.get_or_create(id=1)
     if request.method == 'POST':
-        if request.POST.get('action') == 'add_section':
+        action = request.POST.get('action')
+        
+        if action == 'delete_carousel_image':
+            img_id = request.POST.get('image_id')
+            if img_id:
+                HomeCarouselImage.objects.filter(id=img_id, home_content=home_content).delete()
+                messages.success(request, 'Carousel image deleted.')
+            return redirect('home-edit')
+
+        if action == 'add_section':
             product_id = request.POST.get('section_product')
             subtitle = request.POST.get('section_subtitle', '').strip()
             if product_id:
@@ -187,12 +217,20 @@ def home_edit_view(request):
         home_content.photo_1 = request.POST.get('photo_1', '').strip()
         home_content.photo_2 = request.POST.get('photo_2', '').strip()
         home_content.photo_3 = request.POST.get('photo_3', '').strip()
-        if request.FILES.get('hero_photo_1'):
-            home_content.hero_photo_1 = request.FILES.get('hero_photo_1')
-        if request.FILES.get('hero_photo_2'):
-            home_content.hero_photo_2 = request.FILES.get('hero_photo_2')
-        if request.FILES.get('hero_photo_3'):
-            home_content.hero_photo_3 = request.FILES.get('hero_photo_3')
+        home_content.best_title = request.POST.get('best_title', '').strip()
+        home_content.recommend_title = request.POST.get('recommend_title', '').strip()
+
+        try:
+            home_content.carousel_interval = int(request.POST.get('carousel_interval', 5))
+        except (ValueError, TypeError):
+            home_content.carousel_interval = 5
+        
+        # Handle Multiple Carousel Uploads
+        new_images = request.FILES.getlist('carousel_images')
+        if new_images:
+            for f in new_images:
+                HomeCarouselImage.objects.create(home_content=home_content, image=f)
+
         home_content.save()
         messages.success(request, 'Home updated.')
         return redirect('home')
@@ -202,7 +240,6 @@ def home_edit_view(request):
         'home_content': home_content,
         'sections': sections,
         'products': products,
-        'hide_top_nav': True,
     })
 
 
@@ -221,11 +258,8 @@ def register_view(request):
         name = request.POST.get('name', '').strip()
         username = request.POST.get('username', '').strip()
         password = request.POST.get('password', '')
-        password2 = request.POST.get('password2', '')
 
-        if password != password2:
-            error = 'Passwords do not match.'
-        elif not username or not password:
+        if not username or not password:
             error = 'Please fill required fields.'
         elif User.objects.filter(username=username).exists():
             error = 'Username already exists.'
@@ -260,7 +294,6 @@ def profile_view(request):
         'total_spent': total_spent,
         'messages_count': messages_count,
         'recent_orders': recent_orders,
-        'hide_top_nav': True,
     }
     if request.user.is_superuser:
         cutoff = timezone.now() - timedelta(days=30)
@@ -318,8 +351,6 @@ def profile_edit_view(request):
 
 
 @login_required(login_url='login')
-@login_required(login_url='login')
-@login_required(login_url='login')
 def messages_view(request):
     user = request.user
     context = {}
@@ -336,36 +367,24 @@ def messages_view(request):
             context['is_staff_view'] = True
         else:
             customer_id = request.GET.get('customer')
-            if user.is_superuser:
-                from django.contrib.auth.models import User
-                customers = User.objects.filter(is_staff=False, is_superuser=False).values('id', 'username')
-                customer_threads = []
-                for c in customers:
-                    last_msg = (Message.objects.filter(channel='support', customer_id=c['id'])
-                                .order_by('-created_at')
-                                .first())
-                    customer_threads.append({
-                        'id': c['id'],
-                        'username': c['username'],
-                        'last_text': last_msg.text if last_msg else '',
-                        'last_time': last_msg.created_at if last_msg else None,
-                    })
-            else:
-                customers = (Message.objects.filter(channel='support')
-                             .exclude(customer=None)
-                             .values('customer_id', 'customer__username')
-                             .distinct())
-                customer_threads = []
-                for c in customers:
-                    last_msg = (Message.objects.filter(channel='support', customer_id=c['customer_id'])
-                                .order_by('-created_at')
-                                .first())
-                    customer_threads.append({
-                        'id': c['customer_id'],
-                        'username': c['customer__username'],
-                        'last_text': last_msg.text if last_msg else '',
-                        'last_time': last_msg.created_at if last_msg else None,
-                    })
+            
+            # စာပို့ထားဖူးသော Customer ID များကိုသာ စုထုတ်ခြင်း
+            customer_ids = Message.objects.filter(channel='support').values_list('customer_id', flat=True).distinct()
+            customers = User.objects.filter(id__in=customer_ids).only('id', 'username')
+            
+            customer_threads = []
+            for c in customers:
+                last_msg = Message.objects.filter(channel='support', customer_id=c.id).order_by('-created_at').first()
+                customer_threads.append({
+                    'id': c.id,
+                    'username': c.username,
+                    'last_text': last_msg.text if last_msg else '',
+                    'last_time': last_msg.created_at if last_msg else None,
+                })
+            
+            # နောက်ဆုံးစာဝင်ထားသော Customer ကို ထိပ်ဆုံးမှပြခြင်း
+            customer_threads.sort(key=lambda x: x['last_time'] or timezone.now(), reverse=True)
+
             context['customers'] = customer_threads
             if (not customer_id) and customer_threads:
                 customer_id = customer_threads[0]['id']
@@ -373,6 +392,13 @@ def messages_view(request):
             context['channel'] = 'support'
             if customer_id:
                 thread = Message.objects.filter(channel='support', customer_id=customer_id).order_by('created_at')
+                # Mark customer messages as read when staff views the thread
+                Message.objects.filter(
+                    channel='support', 
+                    customer_id=customer_id, 
+                    is_staff_response=False, 
+                    is_read=False
+                ).update(is_read=True)
             else:
                 thread = Message.objects.none()
             context['thread'] = thread
@@ -381,6 +407,13 @@ def messages_view(request):
         context['channel'] = 'support'
         context['customer_id'] = user.id
         thread = Message.objects.filter(channel='support', customer=user).order_by('created_at')
+        # Mark staff messages as read when customer views the thread
+        Message.objects.filter(
+            channel='support', 
+            customer=user, 
+            is_staff_response=True, 
+            is_read=False
+        ).update(is_read=True)
         context['thread'] = thread
         context['is_staff_view'] = False
 
@@ -393,7 +426,6 @@ def message_center_view(request):
     context = {}
     if user.is_staff or user.is_superuser:
         if user.is_superuser:
-            from django.contrib.auth.models import User
             customers = User.objects.filter(is_staff=False, is_superuser=False).values('id', 'username')
             customer_threads = []
             for c in customers:
@@ -427,7 +459,6 @@ def message_center_view(request):
     else:
         thread = Message.objects.filter(channel='support', customer=user).order_by('-created_at')[:5]
         context['recent_messages'] = thread
-    context['hide_top_nav'] = True
     return render(request, 'app/message_center.html', context)
 
 

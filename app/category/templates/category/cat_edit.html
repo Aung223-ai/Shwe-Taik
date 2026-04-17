@@ -1,37 +1,67 @@
 {% extends 'app/base.html' %}
+{% load static %}
 {% block content %}
 
-<div class="row justify-content-center">
-    <div class="col-12 col-md-8 col-lg-5">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="fw-semibold">Edit Category</div>
-            <a class="btn btn-danger rounded-pill" href="{% url 'cat-edit-list' %}">
-                <i class="bi bi-arrow-left me-1"></i>Back
-            </a>
-        </div>
-
-        <div class="card rounded-4 shadow-sm border-0">
-            <div class="card-body">
-                <div class="text-center mb-3">
-                    <img src="{{ cat.image.url }}" width="120" height="120" class="rounded-circle object-fit-cover border" alt="">
-                </div>
-                <form method="POST" enctype="multipart/form-data" class="vstack gap-3">
-                    {% csrf_token %}
-                    <div>
-                        <label class="form-label fw-semibold">Name</label>
-                        <input type="text" name="name" class="form-control" value="{{ cat.name }}" required>
-                    </div>
-                    <div>
-                        <label class="form-label fw-semibold">Image (optional)</label>
-                        <input type="file" name="image" class="form-control">
-                    </div>
-                    <button class="btn btn-danger rounded-pill w-100" type="submit">
-                        <i class="bi bi-check-circle me-1"></i>Save Changes
-                    </button>
-                </form>
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-5">
+            <div class="mb-4 text-center">
+                <h4 class="fw-bold mb-1">Edit Category</h4>
+                <div class="text-muted small">Update details for <span class="text-danger fw-bold">{{ cat.name }}</span></div>
             </div>
+
+            <div class="card rounded-5 shadow-sm border-0 bg-white">
+                <div class="card-body p-4 p-md-5">
+                    
+                    <div class="text-center mb-4">
+                        <div class="position-relative d-inline-block">
+                            <img src="{{ cat.image.url }}" width="140" height="140" class="rounded-5 object-fit-cover border shadow-sm p-1" alt="{{ cat.name }}">
+                            <div class="position-absolute bottom-0 end-0 bg-dark text-white rounded-circle p-2 shadow" style="transform: translate(-10%, -10%);">
+                                <i class="bi bi-pencil-fill small"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="POST" enctype="multipart/form-data" class="vstack gap-4">
+                        {% csrf_token %}
+                        
+                        <div>
+                            <label class="form-label small fw-bold text-secondary ps-2">Category Name</label>
+                            <input type="text" name="name" class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" value="{{ cat.name }}" required>
+                        </div>
+
+                        <div>
+                            <label class="form-label small fw-bold text-secondary ps-2">Change Image (Optional)</label>
+                            <input type="file" name="image" class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" accept="image/*">
+                            <div class="form-text mt-2 text-muted px-2" style="font-size: 0.75rem;">
+                                <i class="bi bi-info-circle me-1"></i>Leave empty to keep the current image.
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-row gap-2 mt-2">
+                            <a href="{% url 'cat-edit-list' %}" class="btn btn-outline-secondary rounded-5 py-3 fw-semibold flex-grow-1 border-0">
+                                Cancel
+                            </a>
+                            <button class="btn btn-dark rounded-5 py-3 fw-bold shadow-sm flex-grow-1" type="submit">
+                                <i class="bi bi-check-circle-fill me-2"></i>Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <p class="text-muted small text-center mt-4">
+                Changes will be updated across the entire storefront immediately.
+            </p>
         </div>
     </div>
 </div>
+
+<style>
+    /* Premium Input Styling */
+    .form-control { background: #f8f9fa !important; transition: 0.3s; }
+    .form-control:focus { background: #fff !important; box-shadow: 0 0 0 0.15rem rgba(0,0,0,0.05) !important; }
+    .btn:active { transform: scale(0.97); transition: 0.1s; }
+</style>
 
 {% endblock %}

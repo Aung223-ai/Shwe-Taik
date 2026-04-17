@@ -1,49 +1,38 @@
-from django.contrib.auth.models import AnonymousUser
+from django.core.cache import cache
+from .models import LandingContent, Message, Profile
+from category.models import CartItem
 
+def branding(request):
+    landing = cache.get('landing_content')
+    if not landing:
+        landing, _ = LandingContent.objects.get_or_create(id=1)
+        cache.set('landing_content', landing, timeout=60 * 60 * 24) # Cache for 24 hours
+    return {'landing': landing}
 
 def user_role(request):
-    user = getattr(request, 'user', AnonymousUser())
-    if not user or not user.is_authenticated:
-        return {'user_role': 'guest'}
-    if user.is_superuser:
-        return {'user_role': 'admin'}
-    if user.is_staff:
-        return {'user_role': 'staff'}
-    return {'user_role': 'customer'}
-
+    role = None
+    if request.user.is_authenticated:
+        if request.user.is_superuser:
+            role = 'admin'
+        elif request.user.is_staff:
+            role = 'staff'
+        else:
+            role = 'customer'
+    return {'user_role': role}
 
 def cart_count(request):
-    try:
-        user = getattr(request, 'user', None)
-        if user and user.is_authenticated:
-            from category.models import CartItem
-            return {'cart_count': CartItem.objects.filter(user=user).count()}
-    except Exception:
-        pass
-    return {'cart_count': 0}
-
+    count = 0
+    if request.user.is_authenticated:
+        count = CartItem.objects.filter(user=request.user).count()
+    return {'cart_count': count}
 
 def chat_unread_count(request):
-    try:
-        user = getattr(request, 'user', None)
-        if user and user.is_authenticated:
-            from .models import Profile, Message
-            profile, _ = Profile.objects.get_or_create(user=user)
-            last_read = profile.last_message_read_at
-            if user.is_staff or user.is_superuser:
-                count = Message.objects.filter(
-                    channel='support',
-                    is_staff_response=False,
-                    created_at__gt=last_read,
-                ).exclude(user=user).count()
-            else:
-                count = Message.objects.filter(
-                    channel='support',
-                    is_staff_response=True,
-                    customer=user,
-                    created_at__gt=last_read,
-                ).count()
-            return {'chat_unread_count': count}
-    except Exception:
-        pass
-    return {'chat_unread_count': 0}
+    count = 0
+    if request.user.is_authenticated:
+        if request.user.is_staff or request.user.is_superuser:
+            # ဝန်ထမ်းများအတွက်: Customer များဆီမှလာပြီး မဖတ်ရသေးသော စာများ
+            count = Message.objects.filter(is_staff_response=False, is_read=False).count()
+        else:
+            # Customer များအတွက်: မိမိဆီသို့ ဝန်ထမ်းမှပို့ထားပြီး မဖတ်ရသေးသော စာများ
+            count = Message.objects.filter(customer=request.user, is_staff_response=True, is_read=False).count()
+    return {'chat_unread_count': count}

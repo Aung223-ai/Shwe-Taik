@@ -3,101 +3,97 @@
 {% load humanize %}
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <div class="fw-semibold">Product Detail</div>
-    <a class="btn btn-outline-secondary rounded-pill" href="{% url 'all-sub-cats' %}">
-        <i class="bi bi-arrow-left me-1"></i>Back
-    </a>
-</div>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 px-2">
+        <h5 class="fw-bold mb-0">Product Overview</h5>
+        <a class="btn btn-dark rounded-5 px-4 py-2 shadow-sm fw-bold small" href="{% url 'all-sub-cats' %}">
+            <i class="bi bi-arrow-left me-2"></i>Back
+        </a>
+    </div>
 
-<div class="card rounded-4 shadow-sm border-0 mb-4">
-    <div class="card-body p-3 p-md-4">
-        <div class="row g-3 g-md-4 align-items-start">
-            <div class="col-12 col-md-5">
-                <div class="ratio ratio-1x1">
-                    <img class="w-100 h-100 object-fit-cover rounded-4" src="{{ sub.image.url }}" alt="{{ sub.name }}">
-                </div>
-            </div>
-            <div class="col-12 col-md-7">
-                <h4 class="mb-2">{{ sub.name }}</h4>
-                <div class="fw-semibold text-secondary mb-2">{{ sub.price|floatformat:0|intcomma }} ks</div>
-                {% if sub.discount_price and sub.discount_price > 0 %}
-                <div class="text-danger small mb-2">Discount: {{ sub.discount_price|floatformat:0|intcomma }} ks</div>
-                {% endif %}
-                <p class="text-muted mb-3">{{ sub.details }}</p>
-
-                <div class="d-flex flex-wrap gap-2 mb-3">
-                    <span class="badge bg-primary">{{ sub.color }}</span>
-                    <span class="badge bg-secondary">{{ sub.size }}</span>
-                    {% if sub.stock > 0 %}
-                    <span class="badge bg-success">In Stock ({{ sub.stock }})</span>
-                    {% else %}
-                    <span class="badge bg-danger">Out of Stock</span>
-                    {% endif %}
+    <div class="card rounded-5 shadow-sm border-0 mb-5">
+        <div class="card-body p-4 p-md-5">
+            <div class="row g-5 align-items-start">
+                
+                <div class="col-12 col-md-5">
+                    <div class="ratio ratio-1x1 bg-light rounded-5 overflow-hidden shadow-sm">
+                        <img class="object-fit-cover" src="{{ sub.image.url }}" alt="{{ sub.name }}">
+                    </div>
                 </div>
 
-                <div class="d-flex flex-wrap gap-2">
-                    {% if request.user.is_authenticated %}
-                    <form method="post" action="{% url 'toggle-favorite' sub.id %}">
-                        {% csrf_token %}
-                        <button class="btn btn-outline-secondary rounded-pill" type="submit">
-                            {% if is_favorited %}
-                            <i class="bi bi-heart-fill text-danger"></i>
-                            {% else %}
-                            <i class="bi bi-heart"></i>
+                <div class="col-12 col-md-7">
+                    <h2 class="fw-bold text-dark mb-2">{{ sub.name }}</h2>
+                    <p class="text-muted mb-4">{{ sub.parent.name }} Category</p>
+
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <h3 class="fw-bold text-danger mb-0">{{ sub.price|floatformat:0|intcomma }} ks</h3>
+                        {% if sub.discount_price and sub.discount_price > 0 %}
+                        <span class="text-muted text-decoration-line-through">{{ sub.discount_price|floatformat:0|intcomma }} ks</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-6 col-sm-4">
+                            <div class="p-3 bg-light rounded-4 text-center">
+                                <i class="bi bi-palette text-primary fs-4"></i>
+                                <div class="small text-muted mt-1">Color</div>
+                                <div class="fw-bold">{{ sub.color }}</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-sm-4">
+                            <div class="p-3 bg-light rounded-4 text-center">
+                                <i class="bi bi-rulers text-primary fs-4"></i>
+                                <div class="small text-muted mt-1">Size</div>
+                                <div class="fw-bold">{{ sub.size }}</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-sm-4">
+                            <div class="p-3 bg-light rounded-4 text-center">
+                                <i class="bi bi-box-seam text-primary fs-4"></i>
+                                <div class="small text-muted mt-1">Status</div>
+                                <div class="fw-bold {% if sub.stock > 0 %}text-success{% else %}text-danger{% endif %}">
+                                    {% if sub.stock > 0 %}In Stock{% else %}Out of Stock{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-2">Description</h6>
+                        <p class="text-secondary lh-lg">{{ sub.details }}</p>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        {% if request.user.is_authenticated %}
+                            <form method="post" action="{% url 'toggle-favorite' sub.id %}">
+                                {% csrf_token %}
+                                <button class="btn btn-outline-secondary rounded-5 py-3 px-4 border-0 shadow-sm" type="submit">
+                                    <i class="bi {% if is_favorited %}bi-heart-fill text-danger{% else %}bi-heart{% endif %} fs-5"></i>
+                                </button>
+                            </form>
+                            {% if show_purchase_btns %}
+                            <a class="btn btn-dark rounded-5 py-3 px-4 fw-bold shadow-sm" href="{% url 'add-to-cart' sub.id %}">
+                                <i class="bi bi-cart-plus fs-5"></i>
+                            </a>
+                            <a class="btn btn-danger rounded-5 py-3 px-4 flex-grow-1 fw-bold shadow-sm" href="{% url 'buy-now' sub.id %}">
+                                <i class="bi bi-bag-check me-2"></i>Buy Now
+                            </a>
                             {% endif %}
-                        </button>
-                    </form>
-                    {% else %}
-                    <a class="btn btn-outline-secondary rounded-pill" href="{% url 'toggle-favorite-guest' sub.id %}">
-                        <i class="bi bi-heart"></i>
-                    </a>
-                    {% endif %}
-
-                    {% if request.user.is_authenticated %}
-                    <a class="btn btn-danger rounded-pill" href="{% url 'buy-now' sub.id %}">
-                        <i class="bi bi-bag-check me-1"></i>Buy Now
-                    </a>
-                    <a class="btn btn-outline-secondary rounded-pill" href="{% url 'add-to-cart' sub.id %}?next={{ request.path }}">
-                        <i class="bi bi-cart-plus me-1"></i>Add to Cart
-                    </a>
-                    {% else %}
-                    <a class="btn btn-danger rounded-pill" href="{% url 'buy-now-guest' sub.id %}">
-                        <i class="bi bi-bag-check me-1"></i>Buy Now
-                    </a>
-                    <a class="btn btn-outline-secondary rounded-pill" href="{% url 'add-to-cart-guest' sub.id %}">
-                        <i class="bi bi-cart-plus me-1"></i>Add to Cart
-                    </a>
-                    {% endif %}
+                            
+                        {% else %}
+                            <a class="btn btn-danger rounded-5 py-3 px-4 flex-grow-1 fw-bold" href="{% url 'buy-now-guest' sub.id %}">Buy Now</a>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<div>
-    <div class="fw-semibold mb-3">Related Products</div>
-    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-3">
-        {% for p in related %}
-        <div class="col">
-            <a href="{% url 'sub-detail' p.id %}" class="text-decoration-none text-dark">
-                <div class="card h-100 border-0 shadow-sm rounded-4">
-                    <div class="ratio ratio-1x1">
-                        <img class="w-100 h-100 object-fit-cover rounded-top-4" src="{{ p.image.url }}" alt="{{ p.name }}">
-                    </div>
-                    <div class="card-body text-center">
-                        <div class="fw-semibold small">{{ p.name }}</div>
-                        <div class="text-secondary small">{{ p.price|floatformat:0|intcomma }} ks</div>
-                    </div>
-                </div>
-            </a>
-        </div>
-        {% empty %}
-        <div class="col-12">
-            <div class="text-muted small">No related products.</div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
+<style>
+    .bg-light { background-color: #f8f9fa !important; }
+    .rounded-4 { border-radius: 1.5rem !important; }
+    .btn:active { transform: scale(0.97); transition: 0.1s; }
+</style>
 
 {% endblock %}

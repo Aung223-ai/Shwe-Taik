@@ -1,120 +1,77 @@
 {% extends 'app/base.html' %}
 {% load static %}
+{% load humanize %}
 {% block content %}
 
-<div class="row justify-content-center">
-    <div class="col-12 col-md-11 col-lg-10">
-    <div class="mt-2 mt-md-4">
-        <h4 class="mb-1">Profile</h4>
-        <div class="text-muted small">Welcome, {{ request.user.username }}</div>
-    </div>
+<div class="row justify-content-center pb-5">
+    <div class="col-12 col-md-10 col-lg-8 px-3">
+        
+        <div class="mt-4 mb-4 text-center">
+            <h2 class="fw-bold mb-1">My Profile</h2>
+            <div class="text-danger fs-5 fw-bold text-uppercase">Welcome, {{ request.user.username }}</div>
+        </div>
 
-    {% if request.user.is_superuser %}
-    <div class="mt-3">
-        <div class="fw-semibold mb-2">Analytics</div>
-        <div class="row g-2 g-md-3">
-            <div class="col-6 col-md-3">
-                <div class="p-2 p-md-3 bg-white rounded-4 text-center border h-100">
-                    <div class="fw-semibold">{{ favorites_count }}</div>
-                    <div class="text-muted small">Favorites</div>
-                </div>
+        <div class="mb-5">
+            <h5 class="fw-bold mb-3 px-1"><i class="bi bi-bar-chart-fill me-2 text-danger"></i>Personal Analytics</h5>
+            <div class="row g-3">
+                {% with stats=favorites_count label="Favorites" icon="bi-heart" %}{% include "app/stat_card.html" %}{% endwith %}
+                {% with stats=cart_count label="Cart Items" icon="bi-cart" %}{% include "app/stat_card.html" %}{% endwith %}
+                {% with stats=orders_count label="Orders" icon="bi-bag-check" %}{% include "app/stat_card.html" %}{% endwith %}
+                {% with stats=total_spent|floatformat:0|intcomma label="Total Spent" icon="bi-cash" text_class="text-danger" %}{% include "app/stat_card.html" %}{% endwith %}
             </div>
-            <div class="col-6 col-md-3">
-                <div class="p-2 p-md-3 bg-white rounded-4 text-center border h-100">
-                    <div class="fw-semibold">{{ cart_count }}</div>
-                    <div class="text-muted small">Cart Items</div>
-                </div>
+        </div>
+
+        {% if request.user.is_superuser %}
+        <div class="mb-5">
+            <h5 class="fw-bold mb-3 px-1"><i class="bi bi-shield-lock-fill me-2 text-dark"></i>Shop Overview (Admin)</h5>
+            <div class="row g-3">
+                {% with stats=admin_total_users label="Total Users" bg_class="bg-dark" text_class="text-white" label_class="text-white-50" %}{% include "app/stat_card.html" %}{% endwith %}
+                {% with stats=admin_active_users label="Active Users" text_class="text-success" %}{% include "app/stat_card.html" %}{% endwith %}
+                {% with stats=admin_staff_count label="Staff Members" text_class="text-primary" %}{% include "app/stat_card.html" %}{% endwith %}
+                {% with stats=admin_total_hearts label="Total Hearts" text_class="text-danger" %}{% include "app/stat_card.html" %}{% endwith %}
             </div>
-            <div class="col-6 col-md-3">
-                <div class="p-2 p-md-3 bg-white rounded-4 text-center border h-100">
-                    <div class="fw-semibold">{{ orders_count }}</div>
-                    <div class="text-muted small">Orders</div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="p-2 p-md-3 bg-white rounded-4 text-center border h-100">
-                    <div class="fw-semibold">{{ total_spent|floatformat:0 }}</div>
-                    <div class="text-muted small">Total Spent</div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="p-2 p-md-3 bg-white rounded-4 text-center border h-100">
-                    <div class="fw-semibold">{{ messages_count }}</div>
-                    <div class="text-muted small">Messages</div>
+        </div>
+        {% endif %}
+
+        <div class="card shadow-sm border-0 rounded-5 p-4 mb-4 bg-white bg-opacity-75">
+            <div class="card-body p-0">
+                <h5 class="fw-bold mb-4 text-secondary"><i class="bi bi-person-badge me-2"></i>Account Information</h5>
+                <div class="row g-4">
+                    <div class="col-6">
+                        <div class="text-muted small fw-bold text-uppercase">User ID</div>
+                        <div class="fs-5 fw-bold">#{{ request.user.id }}</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-muted small fw-bold text-uppercase">Name</div>
+                        <div class="fs-5 fw-bold">{{ request.user.first_name|default:"Not Set" }}</div>
+                    </div>
+                    <div class="col-12">
+                        <div class="text-muted small fw-bold text-uppercase">Phone</div>
+                        <div class="fs-5 fw-bold">{{ profile.phone|default:"-" }}</div>
+                    </div>
+                    <div class="col-12">
+                        <div class="text-muted small fw-bold text-uppercase">Address</div>
+                        <div class="fs-5 fw-bold">{{ profile.address|default:"No address added yet." }}</div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="mt-4">
-        <div class="fw-semibold mb-2">Admin Dashboard</div>
-        <div class="row g-2 g-md-3">
-            <div class="col-6 col-md-3">
-                <div class="p-2 p-md-3 bg-white rounded-4 text-center border h-100">
-                    <div class="fw-semibold">{{ admin_total_users }}</div>
-                    <div class="text-muted small">Total Users</div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="p-2 p-md-3 bg-white rounded-4 text-center border h-100">
-                    <div class="fw-semibold">{{ admin_active_users }}</div>
-                    <div class="text-muted small">Active Users</div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="p-2 p-md-3 bg-white rounded-4 text-center border h-100">
-                    <div class="fw-semibold">{{ admin_staff_count }}</div>
-                    <div class="text-muted small">Staff Users</div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="p-2 p-md-3 bg-white rounded-4 text-center border h-100">
-                    <div class="fw-semibold">{{ admin_total_hearts }}</div>
-                    <div class="text-muted small">Total Hearts</div>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
-    <div class="card shadow-sm border-0 rounded-4 mt-3">
-        <div class="card-body p-3 p-md-4">
-            <div class="fw-semibold mb-2">Account Info</div>
-            <div class="row g-2">
-                <div class="col-12 col-sm-6 text-muted small">Account ID: {{ request.user.id }}</div>
-                <div class="col-12 col-sm-6 text-muted small">Username: {{ request.user.username }}</div>
-                <div class="col-12 col-sm-6 text-muted small">Name: {{ request.user.first_name|default:"-" }}</div>
-                <div class="col-12 col-sm-6 text-muted small">Email: {{ request.user.email|default:"-" }}</div>
-                <div class="col-12 col-sm-6 text-muted small">Phone: {{ profile.phone|default:"-" }}</div>
-                <div class="col-12 col-sm-6 text-muted small">Address: {{ profile.address|default:"-" }}</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="mt-4">
-        <div class="fw-semibold mb-2">Quick Actions</div>
-        <div class="d-grid d-md-flex flex-wrap gap-2">
-            <a href="{% url 'profile-edit' %}" class="btn btn-outline-secondary btn-sm rounded-pill">
-                <i class="bi bi-pencil-square me-1"></i>Edit Profile
+        <div class="d-flex gap-3">
+            <a href="{% url 'profile-edit' %}" class="btn btn-dark rounded-5 py-3 shadow-sm haptic-btn flex-grow-1">
+                <i class="bi bi-pencil-square me-2"></i><span class="fw-bold">Edit Profile</span>
             </a>
-            <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm rounded-pill">
-                <i class="bi bi-box-arrow-right me-1"></i>Logout
-            </a>
-        </div>
-    </div>
-
-    <div class="mt-4 mb-5">
-        <div class="fw-semibold mb-2">Support & Settings</div>
-        <div class="d-grid d-md-flex flex-wrap gap-2">
-            <a href="{% url 'messages' %}" class="btn btn-outline-primary btn-sm rounded-pill">
-                <i class="bi bi-chat-dots me-1"></i>Chat Support
-            </a>
-            <a href="{% url 'landing' %}#faq" class="btn btn-outline-secondary btn-sm rounded-pill">
-                <i class="bi bi-question-circle me-1"></i>FAQ
+            <a href="{% url 'logout' %}" class="btn btn-outline-danger rounded-5 py-3 shadow-sm haptic-btn flex-grow-1">
+                <i class="bi bi-box-arrow-right me-2"></i><span class="fw-bold">Sign Out</span>
             </a>
         </div>
     </div>
 </div>
-</div>
 
+<style>
+    .card { backdrop-filter: blur(10px); }
+    .haptic-btn:active { transform: scale(0.97); transition: 0.1s; }
+    /* ခလုတ်အရွယ်အစားကို ပိုမိုသပ်ရပ်စေရန် */
+    .btn { font-size: 1rem; }
+</style>
 {% endblock %}

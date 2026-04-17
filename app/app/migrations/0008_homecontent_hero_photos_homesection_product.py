@@ -5,7 +5,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('category', '0001_initial'),
+        ('category', '0002_auto_20260401_1836'),
         ('app', '0007_homemedia_homesection'),
     ]
 

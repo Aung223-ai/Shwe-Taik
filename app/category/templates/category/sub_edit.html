@@ -1,75 +1,102 @@
 {% extends 'app/base.html' %}
+{% load static %}
 {% block content %}
 
-<div class="row justify-content-center">
-    <div class="col-12 col-lg-8">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="fw-semibold">Edit Product</div>
-            <a class="btn btn-danger rounded-pill" href="{% url 'sub-edit-list' %}">
-                <i class="bi bi-arrow-left me-1"></i>Back
-            </a>
-        </div>
-
-        <div class="card rounded-4 shadow-sm border-0">
-            <div class="card-body">
-                <div class="text-center mb-3">
-                    <img src="{{ sub.image.url }}" width="120" height="120" class="rounded-circle object-fit-cover border" alt="">
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-9 col-xl-8">
+            
+            <div class="d-flex justify-content-between align-items-center mb-4 px-2">
+                <div>
+                    <h4 class="fw-bold mb-1">Edit Product</h4>
+                    <div class="text-muted small">Update details for <span class="text-danger fw-bold">{{ sub.name }}</span></div>
                 </div>
-                <form method="POST" enctype="multipart/form-data" class="vstack gap-3">
-                    {% csrf_token %}
-                    <div>
-                        <label class="form-label fw-semibold">Name</label>
-                        <input type="text" name="name" class="form-control" value="{{ sub.name }}" required>
-                    </div>
-                    <div>
-                        <label class="form-label fw-semibold">Category</label>
-                        <select name="parent" class="form-select">
-                            {% for cat in cats %}
-                            <option value="{{ cat.id }}" {% if cat.id == sub.parent.id %}selected{% endif %}>
-                                {{ cat.name }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div>
-                        <label class="form-label fw-semibold">Image (optional)</label>
-                        <input type="file" name="image" class="form-control">
-                    </div>
-                    <div>
-                        <label class="form-label fw-semibold">Details</label>
-                        <textarea name="details" class="form-control" rows="3">{{ sub.details }}</textarea>
-                    </div>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Color</label>
-                            <input type="text" name="color" class="form-control" value="{{ sub.color }}">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Size</label>
-                            <input type="text" name="size" class="form-control" value="{{ sub.size }}">
+                <a class="btn btn-dark rounded-5 px-4 py-2 shadow-sm fw-bold small" href="{% url 'sub-edit-list' %}">
+                    <i class="bi bi-arrow-left me-2"></i>Back
+                </a>
+            </div>
+
+            <div class="card rounded-5 shadow-sm border-0 bg-white">
+                <div class="card-body p-4 p-md-5">
+                    
+                    <div class="text-center mb-4">
+                        <div class="position-relative d-inline-block">
+                            <img src="{{ sub.image.url }}" width="140" height="140" class="rounded-5 object-fit-cover border shadow-sm p-1" alt="{{ sub.name }}">
+                            <div class="position-absolute bottom-0 end-0 bg-dark text-white rounded-circle p-2 shadow" style="transform: translate(-10%, -10%);">
+                                <i class="bi bi-pencil-fill small"></i>
+                            </div>
                         </div>
                     </div>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Price</label>
-                            <input type="number" step="0.01" name="price" class="form-control" value="{{ sub.price }}">
+
+                    <form method="POST" enctype="multipart/form-data" class="vstack gap-4">
+                        {% csrf_token %}
+                        
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="form-label small fw-bold text-secondary ps-2">Product Name</label>
+                                <input type="text" name="name" class="form-control rounded-5 py-3 border-0 bg-light shadow-none px-4" value="{{ sub.name }}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-secondary ps-2">Category</label>
+                                <select name="parent" class="form-select rounded-5 py-3 border-0 bg-light shadow-none px-4">
+                                    {% for cat in cats %}
+                                    <option value="{{ cat.id }}" {% if cat.id == sub.parent.id %}selected{% endif %}>{{ cat.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Discount Price</label>
-                            <input type="number" step="0.01" name="discount_price" class="form-control" value="{{ sub.discount_price }}">
+
+                        <div>
+                            <label class="form-label small fw-bold text-secondary ps-2">Change Image (Optional)</label>
+                            <input type="file" name="image" class="form-control rounded-5 py-3 border-0 bg-light shadow-none px-4">
+                            <div class="form-text small px-2 mt-1">Leave empty to keep the current image.</div>
                         </div>
-                    </div>
-                    <div>
-                        <label class="form-label fw-semibold">Stock</label>
-                        <input type="number" name="stock" class="form-control" value="{{ sub.stock }}">
-                    </div>
-                    <button class="btn btn-danger rounded-pill w-100" type="submit">
-                        <i class="bi bi-check-circle me-1"></i>Save Changes
-                    </button>
-                </form>
+
+                        <div>
+                            <label class="form-label small fw-bold text-secondary ps-2">Product Details</label>
+                            <textarea name="details" class="form-control rounded-5 py-3 border-0 bg-light shadow-none px-4" rows="4">{{ sub.details }}</textarea>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <label class="form-label small fw-bold text-secondary ps-2">Color</label>
+                                <input type="text" name="color" class="form-control rounded-5 py-3 border-0 bg-light shadow-none px-4" value="{{ sub.color }}">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small fw-bold text-secondary ps-2">Size</label>
+                                <input type="text" name="size" class="form-control rounded-5 py-3 border-0 bg-light shadow-none px-4" value="{{ sub.size }}">
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-secondary ps-2">Regular Price</label>
+                                <input type="number" step="0.01" name="price" class="form-control rounded-5 py-3 border-0 bg-light shadow-none px-4" value="{{ sub.price }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-secondary ps-2">Discount Price</label>
+                                <input type="number" step="0.01" name="discount_price" class="form-control rounded-5 py-3 border-0 bg-light shadow-none px-4" value="{{ sub.discount_price }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-secondary ps-2">Stock</label>
+                                <input type="number" name="stock" class="form-control rounded-5 py-3 border-0 bg-light shadow-none px-4" value="{{ sub.stock }}">
+                            </div>
+                        </div>
+
+                        <button class="btn btn-dark rounded-5 py-3 fw-bold shadow-sm mt-3" type="submit">
+                            <i class="bi bi-cloud-arrow-up-fill me-2"></i>Save All Changes
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .form-control, .form-select { background: #f8f9fa !important; transition: 0.3s; }
+    .form-control:focus, .form-select:focus { background: #fff !important; box-shadow: 0 0 0 0.15rem rgba(0,0,0,0.05) !important; }
+    .btn:active { transform: scale(0.97); }
+</style>
 
 {% endblock %}

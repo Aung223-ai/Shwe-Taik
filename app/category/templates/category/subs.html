@@ -3,55 +3,90 @@
 {% load humanize %}
 {% block content %}
 
-<div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
-    <div class="d-flex gap-2">
-        <a class="btn btn-outline-secondary rounded-pill px-3" href="{% url 'all-cats' %}">
-            <i class="bi bi-grid-1x2-fill me-1"></i>Categories
-        </a>
-        <a class="btn btn-danger rounded-pill px-3" href="{% url 'all-sub-cats' %}">
-            <i class="bi bi-bag-fill me-1"></i>Products
-        </a>
-    </div>
-    <div class="ms-md-auto d-flex flex-wrap gap-2">
-        <div class="dropdown">
-            <button class="btn btn-outline-secondary rounded-pill dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-filter me-1"></i>Sort
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item {% if sort == 'name_asc' %}active{% endif %}" href="?sort=name_asc">A-Z</a></li>
-                <li><a class="dropdown-item {% if sort == 'name_desc' %}active{% endif %}" href="?sort=name_desc">Z-A</a></li>
-                <li><a class="dropdown-item {% if sort == 'price_asc' %}active{% endif %}" href="?sort=price_asc">Price Low to High</a></li>
-                <li><a class="dropdown-item {% if sort == 'price_desc' %}active{% endif %}" href="?sort=price_desc">Price High to Low</a></li>
-                <li><a class="dropdown-item {% if sort == 'newest' %}active{% endif %}" href="?sort=newest">Newest</a></li>
-            </ul>
+<div class="container py-4">
+    <div class="d-flex flex-wrap gap-2 mb-4 align-items-center bg-white p-2 rounded-5 shadow-sm border-0">
+
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center border-0"
+                style="width: 45px; height: 45px;" href="{% url 'all-cats' %}" title="Categories">
+                <i class="bi bi-grid-1x2-fill"></i>
+            </a>
+            <a class="btn btn-dark rounded-circle d-flex align-items-center justify-content-center"
+                style="width: 45px; height: 45px;" href="{% url 'all-sub-cats' %}" title="Products">
+                <i class="bi bi-bag-fill"></i>
+            </a>
         </div>
-        {% if request.user.is_authenticated %}
-        <a class="btn btn-outline-secondary rounded-pill" href="{% url 'sub-create' %}">
-            <i class="bi bi-plus-lg me-1"></i>Add
-        </a>
-        <a class="btn btn-outline-secondary rounded-pill" href="{% url 'sub-edit-list' %}">
-            <i class="bi bi-pencil-square me-1"></i>Edit
-        </a>
-        {% endif %}
+
+        <div class="ms-auto d-flex flex-wrap gap-2 align-items-center">
+
+            <div class="dropdown">
+                <button class="btn btn-light rounded-circle d-flex align-items-center justify-content-center"
+                    style="width: 45px; height: 45px;" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-filter-left"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 mt-2">
+                    <li><a class="dropdown-item py-2" href="?sort=name_asc">A-Z</a></li>
+                    <li><a class="dropdown-item py-2" href="?sort=name_desc">Z-A</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item py-2" href="?sort=price_asc">Price: Low to High</a></li>
+                    <li><a class="dropdown-item py-2" href="?sort=price_desc">Price: High to Low</a></li>
+                    <li><a class="dropdown-item py-2" href="?sort=newest">Newest</a></li>
+                </ul>
+            </div>
+
+            {% if request.user.is_authenticated %}
+            <a class="btn btn-light rounded-circle d-flex align-items-center justify-content-center border-0"
+                style="width: 45px; height: 45px;" href="{% url 'sub-edit-list' %}" title="Edit">
+                <i class="bi bi-pencil-square"></i>
+            </a>
+            <a class="btn btn-light rounded-circle d-flex align-items-center justify-content-center border-0"
+                style="width: 45px; height: 45px;" href="{% url 'sub-create' %}" title="Add">
+                <i class="bi bi-plus-lg"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-5 g-3 pb-5">
+        {% for sub in subs %}
+        <div class="col">
+            <a href="{% url 'sub-detail' sub.id %}" class="text-decoration-none text-dark h-100 d-block">
+                <div class="card h-100 border-0 shadow-sm rounded-5 overflow-hidden transition-all hover-up">
+                    <div class="ratio ratio-1x1 bg-light">
+                        <img class="w-100 h-100 object-fit-cover" src="{{ sub.image.url }}" alt="{{ sub.name }}">
+                    </div>
+                    <div class="card-body p-3 text-center">
+                        <div class="fw-bold small text-truncate mb-1">{{ sub.name }}</div>
+                        <div class="text-danger fw-bold small">{{ sub.price|floatformat:0|intcomma }} ks</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-search display-1 text-muted opacity-25 mb-3 d-block"></i>
+            <h5 class="text-muted">No products found.</h5>
+        </div>
+        {% endfor %}
     </div>
 </div>
 
-<div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-5 g-3">
-    {% for sub in subs %}
-    <div class="col">
-        <a href="{% url 'sub-detail' sub.id %}" class="text-decoration-none text-dark">
-            <div class="card h-100 border-0 shadow-sm rounded-4">
-                <div class="ratio ratio-1x1">
-                    <img class="w-100 h-100 object-fit-cover rounded-top-4" src="{{ sub.image.url }}" alt="{{ sub.name }}">
-                </div>
-                <div class="card-body text-center">
-                    <div class="fw-semibold small">{{ sub.name }}</div>
-                    <div class="text-secondary small">{{ sub.price|floatformat:0|intcomma }} ks</div>
-                </div>
-            </div>
-        </a>
-    </div>
-    {% endfor %}
-</div>
+<style>
+    .hover-up {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .hover-up:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 25px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .btn:active {
+        transform: scale(0.92);
+        transition: 0.1s;
+    }
+</style>
 
 {% endblock %}

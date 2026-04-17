@@ -2,30 +2,102 @@
 {% block content %}
 
 <div class="col-12 col-md-10 col-lg-8 mx-auto">
-    <div class="mt-4 mb-2 d-flex align-items-center justify-content-between sticky-back">
-        <div class="fw-semibold">Edit Home</div>
-        <a class="btn btn-outline-danger rounded-4" href="{% url 'home' %}">
-            <i class="bi bi-arrow-left me-1"></i>Back
-        </a>
-    </div>
 
-    <form method="post" class="vstack gap-3" enctype="multipart/form-data">
+    <form method="post" class="vstack gap-4" enctype="multipart/form-data">
         {% csrf_token %}
-        <div class="card rounded-4 shadow-sm border-0 p-3">
-            <div class="fw-semibold mb-2">Hero Media</div>
-            <div class="text-muted small mb-2">Upload 3 photos for hero slideshow.</div>
-            <label class="form-label small">Photo 1</label>
-            <input class="form-control rounded-5 mb-2" type="file" name="hero_photo_1" accept="image/*">
-            <label class="form-label small">Photo 2</label>
-            <input class="form-control rounded-5 mb-2" type="file" name="hero_photo_2" accept="image/*">
-            <label class="form-label small">Photo 3</label>
-            <input class="form-control rounded-5" type="file" name="hero_photo_3" accept="image/*">
+
+        <div class="card rounded-5 shadow-sm border-0 p-4 bg-white">
+            <div class="d-flex align-items-center mb-3">
+                <div class="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
+                    <i class="bi bi-type-h1 text-primary"></i>
+                </div>
+                <div>
+                    <div class="fw-bold">Section Titles</div>
+                    <div class="text-muted small">Change display names for product rows.</div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label ps-2">Best Seller Section Title</label>
+                <input class="form-control rounded-pill bg-light border-0 py-2 px-3" name="best_title"
+                    value="{{ home_content.best_title }}" placeholder="e.g. Best Seller Products">
+            </div>
+
+            <div class="mb-1">
+                <label class="form-label ps-2">Recommended Section Title</label>
+                <input class="form-control rounded-pill bg-light border-0 py-2 px-3" name="recommend_title"
+                    value="{{ home_content.recommend_title }}" placeholder="e.g. Recommended Products">
+            </div>
         </div>
 
-        <button class="btn btn-danger rounded-pill w-100" type="submit">
-            <i class="bi bi-check-circle me-1"></i>Save Changes
-        </button>
+        <div class="card rounded-5 shadow-sm border-0 p-4 bg-white">
+            <div class="d-flex align-items-center mb-3">
+                <div class="bg-success bg-opacity-10 p-2 rounded-circle me-3">
+                    <i class="bi bi-images text-success"></i>
+                </div>
+                <div>
+                    <div class="fw-bold">Carousel Settings</div>
+                    <div class="text-muted small">Manage slideshow images and timing.</div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label ps-2">Slide Interval (Seconds)</label>
+                <input type="number" class="form-control rounded-pill bg-light border-0 py-2 px-3 w-50"
+                    name="carousel_interval" value="{{ home_content.carousel_interval }}" min="1" max="60">
+            </div>
+
+            <label class="form-label ps-2 mb-2">Current Carousel Images</label>
+            <div class="row g-3 mb-4">
+                {% for ci in home_content.carousel_images.all %}
+                <div class="col-4 col-sm-3 col-md-2">
+                    <div class="position-relative shadow-sm rounded-4 overflow-hidden shadow-sm" style="height: 70px;">
+                        <img src="{{ ci.image.url }}" class="w-100 h-100 object-fit-cover" alt="">
+                        <button type="submit" name="action" value="delete_carousel_image"
+                            class="btn btn-danger btn-sm rounded-circle position-absolute top-0 end-0 m-1 d-flex align-items-center justify-content-center shadow"
+                            style="width: 24px; height: 24px; padding: 0;">
+                            <input type="hidden" name="image_id" value="{{ ci.id }}">
+                            <i class="bi bi-x" style="font-size: 1.2rem;"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="p-3 rounded-pill border-dashed border-2 bg-light text-center border-secondary-subtle">
+                <label class="form-label fw-bold d-block mb-2">Add New Images</label>
+                <input class="form-control rounded-pill border-0 shadow-sm" type="file" name="carousel_images"
+                    accept="image/*" multiple>
+                <div class="text-muted small mt-2 px-2">
+                    <i class="bi bi-info-circle me-1"></i>You can select multiple photos at once.
+                </div>
+            </div>
+        </div>
+
+        <div class=" text-center">
+            <a class="btn btn-light rounded-pill py-2 px-4 fw-bold shadow-sm haptic-btn" href="{% url 'home' %}">
+                <i class="bi bi-arrow-left me-1"></i>Back
+            </a>
+            <button class="btn btn-dark rounded-pill py-2 px-4 fw-bold  haptic-btn" type="submit">
+                <i class="bi bi-check-circle-fill me-2"></i>Save All Changes
+            </button>
+        </div>
+
     </form>
 </div>
 
+<style>
+    .border-dashed {
+        border-style: dashed !important;
+    }
+    .form-control:focus {
+        background-color: #ffffff !important;
+        border: 1px solid #0d6efd !important;
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.08) !important;
+    }
+    .haptic-btn:active {
+        transform: scale(0.97);
+        transition: transform 0.1s;
+    }
+</style>
 {% endblock %}

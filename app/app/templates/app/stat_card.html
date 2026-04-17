@@ -1,0 +1,9 @@
+<div class="col-6 col-md-3">
+    <div class="p-3 {{ bg_class|default:'bg-white' }} rounded-5 text-center border-0 shadow-sm h-100">
+        <div class="h4 fw-bold {{ text_class|default:'text-dark' }} mb-0">
+            {% if icon %}<i class="bi {{ icon }} me-1"></i>{% endif %}
+            {{ stats }}
+        </div>
+        <div class="text-muted small {{ label_class|default:'' }}">{{ label }}</div>
+    </div>
+</div>

@@ -1,77 +1,80 @@
 {% extends 'app/base.html' %}
 {% load static %}
-{% block content %}
 
-<div class="row justify-content-center">
-    <div class="col-12 col-md-11 col-lg-10">
-        <div class="card rounded-4 shadow-sm border-0" id="chatApp"
+{% block content %}
+<div class="row justify-content-center mt-3 mt-md-4">
+    <div class="col-12 col-md-10 col-lg-8 px-3">
+        
+        <div class="card shadow-lg border-0 rounded-5 overflow-hidden bg-white bg-opacity-75" id="chatApp"
              data-channel="{{ channel }}"
              data-customer="{{ customer_id|default:'' }}"
              data-user="{{ request.user.id }}"
-             data-username="{{ request.user.username }}"
-             data-is-staff="{{ is_staff_view|yesno:'1,0' }}">
-            <div class="card-body">
-                {% if is_staff_view %}
-                <div class="d-flex flex-wrap gap-2 mb-3">
-                    <a href="?channel=support" class="btn rounded-pill {% if channel != 'staff_admin' %}btn-danger{% else %}btn-outline-danger{% endif %}">
-                        <i class="bi bi-person-lines-fill me-1"></i>Support
-                    </a>
-                    <a href="?channel=staff_admin" class="btn rounded-pill {% if channel == 'staff_admin' %}btn-danger{% else %}btn-outline-danger{% endif %}">
-                        <i class="bi bi-shield-lock me-1"></i>Team
-                    </a>
-                </div>
-                {% endif %}
+             data-username="{{ request.user.username }}">
+            
+            <div class="card-header bg-white border-bottom py-4 px-4">
+                <h5 class="mb-0 fw-bold text-dark">
+                    <i class="bi bi-chat-dots-fill text-danger me-2"></i>Live Conversation
+                </h5>
+            </div>
 
-                {% if is_staff_view and channel != 'staff_admin' %}
-                <div class="list-group rounded-4 mb-3">
-                    {% for c in customers %}
-                    <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if customer_id|default:'' == c.id|stringformat:'s' %}active{% endif %}"
-                       href="?channel=support&customer={{ c.id }}">
-                        <span class="fw-semibold small">{{ c.username }}</span>
-                        <span class="small">{% if c.last_time %}{{ c.last_time|date:"H:i" }}{% endif %}</span>
-                    </a>
-                    {% empty %}
-                    <div class="list-group-item text-center text-muted small">No active chats</div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-
-                {% if is_staff_view and channel == 'staff_admin' %}
-                <div class="small text-muted mb-3">
-                    <i class="bi bi-shield-lock me-1"></i>Private channel between Staff &amp; Admin
-                </div>
-                {% endif %}
-
-                <div id="chatBody" class="vstack gap-2 mb-3 px-1" style="overflow-y: auto;">
+            <div class="card-body bg-light p-3" style="height: 550px;">
+                <div id="chatBody" class="d-flex flex-column gap-3 h-100 overflow-y-auto p-2">
                     {% if is_staff_view and channel == 'support' and not customer_id %}
-                    <div class="text-muted small text-center py-4">Select a customer above to view messages.</div>
+                    <div class="text-muted text-center py-5">
+                        <i class="bi bi-person-lines-fill display-1 opacity-25"></i>
+                        <p class="fs-5 mt-3">Select a customer to view messages.</p>
+                    </div>
                     {% endif %}
+
                     {% for msg in thread %}
-                    {% if msg.user_id == request.user.id %}
-                    <div class="d-flex justify-content-end mb-1">
-                        <div class="bg-danger text-white rounded-4 px-3 py-2 shadow-sm small" style="max-width: 85%;">{{ msg.text }}</div>
-                    </div>
-                    {% else %}
-                    <div class="d-flex align-items-start gap-2 mb-1">
-                        <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center fw-semibold p-2 lh-1 flex-shrink-0" style="width: 32px; height: 32px; font-size: 0.8rem;">
-                            {{ msg.user.username|slice:":1"|upper }}
+                        <div class="d-flex {% if msg.user_id == request.user.id %}justify-content-end{% endif %}">
+                            {% if msg.user_id != request.user.id %}
+                                <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0 shadow-sm" style="width: 45px; height: 45px;">
+                                    <span class="fs-5">{{ msg.user.username|slice:":1"|upper }}</span>
+                                </div>
+                            {% endif %}
+                            <div class="p-3 px-4 rounded-5 shadow-sm {% if msg.user_id == request.user.id %}bg-danger text-white{% else %}bg-white border{% endif %}" style="max-width: 80%;">
+                                <div class="fs-5" style="white-space: pre-wrap;">{{ msg.text }}</div>
+                            </div>
                         </div>
-                        <div class="bg-white border rounded-4 px-3 py-2 shadow-sm small" style="max-width: 85%;">{{ msg.text }}</div>
-                    </div>
-                    {% endif %}
                     {% endfor %}
                 </div>
+            </div>
 
-                <form id="chatForm" class="d-flex gap-2 align-items-end">
-                    <textarea id="messageInput" class="form-control" rows="2" placeholder="Type a message..." required></textarea>
-                    <button type="submit" id="sendBtn" class="btn btn-danger rounded-pill flex-shrink-0">
-                        <i class="bi bi-send-fill"></i>
+            <div class="card-footer bg-white border-0 p-4">
+                <form id="chatForm" class="d-flex gap-3 align-items-end">
+                    <textarea id="messageInput" class="form-control form-control-lg rounded-5 px-4 py-3 fs-5 border-0 bg-light" 
+                              rows="1" placeholder="Type a message..." style="resize: none; overflow: hidden;"></textarea>
+                    
+                    <button type="submit" id="sendBtn" class="btn btn-danger rounded-circle shadow-sm haptic-btn d-flex align-items-center justify-content-center" 
+                            style="width: 60px; height: 60px; min-width: 60px; padding: 0;">
+                        <i class="bi bi-send-fill fs-4"></i>
                     </button>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    /* UI Refinements */
+    .card { backdrop-filter: blur(15px); }
+    .card-body { background: rgba(0,0,0,0.02) !important; }
+    
+    #messageInput:focus {
+        background: #fff !important;
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.1) !important;
+    }
+    
+    .haptic-btn:active {
+        transform: scale(0.97);
+        transition: transform 0.1s;
+    }
+
+    @media (max-width: 576px) {
+        .card-body { height: 400px !important; }
+    }
+</style>
 
 <script>
     const app = document.getElementById('chatApp');
@@ -84,14 +87,20 @@
     const customerId = app?.dataset.customer || '';
     const userId = app?.dataset.user;
 
-    try {
-        const params = new URLSearchParams(window.location.search);
-        const draft = params.get('draft');
-        if (draft && input) {
-            input.value = draft;
-            input.focus();
+    function scrollToBottom() { chatBody.scrollTop = chatBody.scrollHeight; }
+    scrollToBottom();
+
+    input.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            form.dispatchEvent(new Event('submit'));
         }
-    } catch (e) {}
+    });
 
     let wsUrl = '';
     if (channel === 'staff_admin') {
@@ -100,82 +109,52 @@
         wsUrl = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/chat/support/${customerId}/`;
     }
 
-    if (chatBody) {
-        window.scrollTo(0, document.body.scrollHeight);
-    }
-
     let socket = null;
-    let reconnectTimer = null;
-
-    function createAvatar(letter) {
-        const avatar = document.createElement('div');
-        avatar.className = 'rounded-circle bg-danger text-white d-flex align-items-center justify-content-center fw-semibold p-2 lh-1';
-        avatar.textContent = letter;
-        return avatar;
-    }
-
     function setInputState(disabled, placeholder) {
-        if (input) {
-            input.disabled = disabled;
-            if (placeholder) input.placeholder = placeholder;
-        }
+        if (input) { input.disabled = disabled; input.placeholder = placeholder; }
         if (sendBtn) sendBtn.disabled = disabled;
     }
 
     function connectSocket() {
-        if (!wsUrl) {
-            setInputState(true, 'Select a customer to start chatting.');
-            return;
-        }
+        if (!wsUrl) { setInputState(true, 'Select a customer to start.'); return; }
         socket = new WebSocket(wsUrl);
-        socket.onopen = () => {
-            setInputState(false, 'Type a message...');
-            clearTimeout(reconnectTimer);
-        };
+        socket.onopen = () => { setInputState(false, 'Type a message...'); };
         socket.onmessage = (e) => {
             const data = JSON.parse(e.data);
             const isMe = String(data.sender_id) === String(userId);
+            
             const wrapper = document.createElement('div');
-
-            if (isMe) {
-                wrapper.className = 'd-flex justify-content-end';
-                const bubble = document.createElement('div');
-                bubble.className = 'bg-danger text-white rounded-4 px-3 py-2';
-                bubble.textContent = data.message;
-                wrapper.appendChild(bubble);
-            } else {
-                wrapper.className = 'd-flex align-items-start gap-2';
-                const bubble = document.createElement('div');
-                bubble.className = 'bg-body-secondary rounded-4 px-3 py-2';
-                bubble.textContent = data.message;
-                wrapper.appendChild(createAvatar((data.sender_name || '?')[0].toUpperCase()));
-                wrapper.appendChild(bubble);
+            wrapper.className = `d-flex ${isMe ? 'justify-content-end' : ''}`;
+            
+            if (!isMe) {
+                const avatar = document.createElement('div');
+                avatar.className = 'bg-dark text-white rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm';
+                avatar.style.width = '45px'; avatar.style.height = '45px';
+                avatar.innerHTML = `<span class="fs-5">${(data.sender_name || '?')[0].toUpperCase()}</span>`;
+                wrapper.appendChild(avatar);
             }
-
+            
+            const bubble = document.createElement('div');
+            bubble.className = `p-3 px-4 rounded-5 shadow-sm ${isMe ? 'bg-danger text-white' : 'bg-white border'}`;
+            bubble.style.maxWidth = '80%';
+            bubble.innerHTML = `<div class="fs-5" style="white-space: pre-wrap;">${data.message}</div>`;
+            wrapper.appendChild(bubble);
+            
             chatBody.appendChild(wrapper);
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            scrollToBottom();
         };
-        socket.onclose = () => {
-            setInputState(true, 'Reconnecting...');
-            reconnectTimer = setTimeout(connectSocket, 1500);
-        };
+        socket.onclose = () => { setTimeout(connectSocket, 1500); };
     }
-
     connectSocket();
 
-    if (form) {
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const msg = input.value.trim();
-            if (!msg || !socket || socket.readyState !== WebSocket.OPEN) {
-                alert('Chat not connected. Please refresh.');
-                return;
-            }
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const msg = input.value.trim();
+        if (msg && socket.readyState === WebSocket.OPEN) {
             socket.send(JSON.stringify({ message: msg }));
             input.value = '';
-            input.focus();
-        });
-    }
+            input.style.height = 'auto';
+        }
+    });
 </script>
-
 {% endblock %}

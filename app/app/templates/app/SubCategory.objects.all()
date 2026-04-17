@@ -1,11 +1,8 @@
-import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
-from django.db import models, transaction
-from django.db.models import Count, Max
+from django.db import models
 from django.contrib import messages
-from django.http import JsonResponse
 from .models import Category, SubCategory 
 from .models import Favorite, CartItem, Order, OrderItem
 
@@ -47,25 +44,31 @@ def cats(request):
 @login_required(login_url='login')
 def cats_reorder(request):
     if not (request.user.is_staff or request.user.is_superuser):
+        from django.http import JsonResponse
         return JsonResponse({'ok': False, 'error': 'forbidden'}, status=403)
     if request.method != 'POST':
+        from django.http import JsonResponse
         return JsonResponse({'ok': False, 'error': 'method_not_allowed'}, status=405)
 
     try:
+        import json
         payload = json.loads(request.body.decode('utf-8') or '{}')
         ids = payload.get('ids') or []
         ids = [int(x) for x in ids]
     except Exception:
+        from django.http import JsonResponse
         return JsonResponse({'ok': False, 'error': 'invalid_payload'}, status=400)
 
     cats_list = list(Category.objects.filter(id__in=ids))
     by_id = {c.id: c for c in cats_list}
     ordered = [by_id[i] for i in ids if i in by_id]
 
+    from django.db import transaction
     with transaction.atomic():
         for idx, c in enumerate(ordered):
             Category.objects.filter(id=c.id).update(sort_order=idx)
 
+    from django.http import JsonResponse
     return JsonResponse({'ok': True})
 
 @staff_member_required(login_url='login')
@@ -101,15 +104,6 @@ def cat_edit(request, cat_id):
     return render(request, 'category/cat_edit.html', {'cat': cat})
 
 
-@login_required(login_url='login')
-@staff_member_required(login_url='login')
-def cat_delete(request, cat_id):
-    cat = get_object_or_404(Category, id=cat_id)
-    cat.delete()
-    messages.success(request, 'Category deleted successfully.')
-    return redirect('cat-edit-list')
-
-
 def cat_products(request, cat_id):
     cat = get_object_or_404(Category, id=cat_id)
     products = SubCategory.objects.filter(parent=cat)
@@ -121,12 +115,10 @@ def cat_products(request, cat_id):
 
 def subs(request):
     sort = request.GET.get('sort', '')
-    q = request.GET.get('q', '').strip()
+    query = request.GET.get('q', '').strip()
     subs_qs = SubCategory.objects.all()
-    
-    if q:
-        subs_qs = subs_qs.filter(name__icontains=q)
-        
+    if query:
+        subs_qs = subs_qs.filter(models.Q(name__icontains=query) | models.Q(details__icontains=query))
     if sort == 'name_asc':
         subs_qs = subs_qs.order_by('name')
     elif sort == 'name_desc':
@@ -137,23 +129,7 @@ def subs(request):
         subs_qs = subs_qs.order_by('-price')
     elif sort == 'newest':
         subs_qs = subs_qs.order_by('-id')
-    return render(request, 'category/subs.html', {'subs': subs_qs, 'sort': sort, 'q': q})
-
-def live_search(request):
-    q = request.GET.get('q', '').strip()
-    if not q:
-        return JsonResponse({'results': []})
-    
-    results = SubCategory.objects.filter(name__icontains=q)[:6]
-    data = []
-    for r in results:
-        data.append({
-            'id': r.id,
-            'name': r.name,
-            'price': r.price,
-            'image_url': r.image.url if r.image else ''
-        })
-    return JsonResponse({'results': data})
+    return render(request, 'category/subs.html', {'subs': subs_qs, 'sort': sort})
 
 def sub_detail(request, sub_id):
     sub = get_object_or_404(SubCategory, id=sub_id)
@@ -190,14 +166,16 @@ def toggle_favorite(request, sub_id):
                 oldest = staff_favs.first()
                 if oldest:
                     oldest.delete()
+                from django.contrib import messages
                 messages.info(request, 'Replaced the oldest staff heart to keep only 12 products.')
-        next_order = (Favorite.objects.filter(user=request.user).aggregate(m=Max('sort_order'))['m'] or 0) + 1
+        next_order = (Favorite.objects.filter(user=request.user).aggregate(m=models.Max('sort_order'))['m'] or 0) + 1
         Favorite.objects.create(user=request.user, product=sub, sort_order=next_order)
     return redirect('sub-detail', sub_id=sub.id)
 
 def toggle_favorite_guest(request, sub_id):
+    from django.contrib import messages
     messages.info(request, 'Please login to add favorites.')
-    return redirect(f"/login/?next=/shop/products/{sub_id}/")
+    return redirect(f"/login/?next=/cats/subs/{sub_id}/")
 
 
 @login_required(login_url='login')
@@ -209,6 +187,8 @@ def favorites(request):
 
     top_ten = []
     if request.user.is_superuser:
+        from django.db.models import Count
+        from .models import SubCategory
         top_ids = list(
             Favorite.objects
             .filter(user__is_staff=False, user__is_superuser=False)
@@ -230,10 +210,12 @@ def favorites_reorder(request):
     if request.method != 'POST':
         return redirect('favorites')
     try:
+        import json
         payload = json.loads(request.body.decode('utf-8') or '{}')
         ids = payload.get('ids') or []
         ids = [int(x) for x in ids]
     except Exception:
+        from django.http import JsonResponse
         return JsonResponse({'ok': False, 'error': 'invalid_payload'}, status=400)
 
     # Only reorder favorites belonging to this user
@@ -241,10 +223,12 @@ def favorites_reorder(request):
     by_id = {f.id: f for f in favs}
 
     ordered = [by_id[i] for i in ids if i in by_id]
+    from django.db import transaction
     with transaction.atomic():
         for idx, f in enumerate(ordered):
             Favorite.objects.filter(id=f.id, user=request.user).update(sort_order=idx)
 
+    from django.http import JsonResponse
     return JsonResponse({'ok': True})
 
 
@@ -260,6 +244,7 @@ def add_to_cart(request, sub_id):
         item.save()
     else:
         CartItem.objects.create(user=request.user, product=sub, quantity=1)
+    from django.contrib import messages
     messages.success(request, 'Added to cart.')
     next_url = request.GET.get('next')
     if next_url:
@@ -269,7 +254,7 @@ def add_to_cart(request, sub_id):
 def add_to_cart_guest(request, sub_id):
     from django.contrib import messages
     messages.info(request, 'Please login to add items to cart.')
-    return redirect(f"/login/?next=/shop/products/{sub_id}/")
+    return redirect(f"/login/?next=/cats/subs/{sub_id}/")
 
 @login_required(login_url='login')
 def buy_now(request, sub_id):
@@ -283,12 +268,14 @@ def buy_now(request, sub_id):
         item.save()
     else:
         CartItem.objects.create(user=request.user, product=sub, quantity=1)
+    from django.contrib import messages
     messages.success(request, 'Added to cart.')
     return redirect('cart')
 
 def buy_now_guest(request, sub_id):
+    from django.contrib import messages
     messages.info(request, 'Please login to buy now.')
-    return redirect(f"/login/?next=/shop/products/{sub_id}/")
+    return redirect(f"/login/?next=/cats/subs/{sub_id}/")
 
 
 @login_required(login_url='login')
@@ -307,27 +294,19 @@ def cart_view(request):
         })
 
     items = CartItem.objects.filter(user=request.user).select_related('product')
-    active_orders = (Order.objects.filter(user=request.user, status__in=['pending', 'accepted'])
-                     .prefetch_related('items__product')
-                     .order_by('-created_at'))
-    history_orders = (Order.objects.filter(user=request.user, status__in=['delivered', 'cancelled'])
-                     .prefetch_related('items__product')
-                     .order_by('-created_at')[:20])
+    recent_orders = Order.objects.filter(user=request.user).order_by('-created_at')[:5]
     total = sum((i.product.price * i.quantity) for i in items)
 
     if request.method == 'POST':
         payment_method = request.POST.get('payment_method')
         screenshot = request.FILES.get('kpay_screenshot')
-        phone_number = request.POST.get('phone_number')
-        delivery_address = request.POST.get('delivery_address')
 
         if payment_method in ('cod', 'kpay') and items.exists():
             if payment_method == 'kpay' and not screenshot:
                 return render(request, 'category/cart.html', {
                     'items': items,
                     'total': total,
-                    'active_orders': active_orders,
-                    'history_orders': history_orders,
+                    'recent_orders': recent_orders,
                     'error': 'Please upload KPay screenshot.',
                 })
 
@@ -336,8 +315,6 @@ def cart_view(request):
                 total=total,
                 payment_method=payment_method,
                 kpay_screenshot=screenshot if payment_method == 'kpay' else None,
-                phone_number=phone_number,
-                delivery_address=delivery_address,
             )
             for item in items:
                 OrderItem.objects.create(
@@ -347,14 +324,14 @@ def cart_view(request):
                     price=item.product.price,
                 )
             items.delete()
+            from django.contrib import messages
             messages.success(request, 'Order submitted.')
             return redirect('cart')
 
     return render(request, 'category/cart.html', {
         'items': items,
         'total': total,
-        'active_orders': active_orders,
-        'history_orders': history_orders,
+        'recent_orders': recent_orders,
     })
 
 
@@ -386,11 +363,13 @@ def order_update_status(request, order_id, status):
         'cancelled': set(),
     }
     if status not in allowed_transitions.get(current, set()):
+        from django.contrib import messages
         messages.info(request, f'Cannot change status from {current} to {status}.')
         return redirect('cart')
 
     order.status = status
     order.save(update_fields=['status'])
+    from django.contrib import messages
     messages.success(request, f'Order #{order.id} marked as {status}.')
     return redirect('cart')
 

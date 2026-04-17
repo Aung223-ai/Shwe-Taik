@@ -1,95 +1,243 @@
 {% extends 'app/base.html' %}
+{% load static %}
 {% block content %}
 
-<div class="col-12 col-md-10 col-lg-8 mx-auto">
-    <div class="mt-4 mb-2 d-flex align-items-center justify-content-between sticky-back">
-        <div class="fw-semibold">Edit Landing</div>
-        <a class="btn btn-outline-danger rounded-4" href="{% url 'landing' %}">
-            <i class="bi bi-arrow-left me-1"></i>Back
-        </a>
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
+            
+            <div class="mb-4 text-center">
+                <h4 class="fw-bold mb-1">Edit Landing Page</h4>
+                <div class="text-muted small">Customize your storefront homepage settings.</div>
+            </div>
+
+            <form method="post" class="vstack gap-4" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="card rounded-5 shadow-sm border-0 p-4 p-md-5">
+                    <div class="fw-bold text-primary mb-4 text-uppercase small d-flex align-items-center">
+                        <i class="bi bi-shield-check me-2 fs-5"></i> Site Branding
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold text-secondary ps-2">FAVICON</label>
+                            {% if landing.favicon %}
+                            <div class="mb-2"><img src="{{ landing.favicon.url }}" width="48" height="48" class="rounded-4 shadow-sm border"></div>
+                            {% endif %}
+                            <input class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" type="file" name="favicon" accept="image/*">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold text-secondary ps-2">LOGO</label>
+                            {% if landing.logo %}
+                            <div class="mb-2"><img src="{{ landing.logo.url }}" height="48" class="rounded-4 px-3 py-2 shadow-sm border"></div>
+                            {% endif %}
+                            <input class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" type="file" name="logo" accept="image/*">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card rounded-5 shadow-sm border-0 p-4 p-md-5" style="border: 2px solid rgba(220,53,69,0.15) !important;">
+                    <div class="fw-bold text-danger mb-4 text-uppercase small d-flex align-items-center">
+                        <i class="bi bi-image-fill me-2 fs-5"></i> Site Background
+                        <span class="badge bg-danger ms-2 rounded-pill small fw-normal">Applies Globally</span>
+                    </div>
+
+                    <div class="row g-4 mb-4">
+                        <!-- Desktop Background -->
+                        <div class="col-12 col-md-6">
+                            <div class="p-3 bg-light rounded-4 h-100">
+                                <div class="fw-bold small text-dark mb-2 d-flex align-items-center">
+                                    <i class="bi bi-display me-2 text-primary"></i>Desktop / Web
+                                    <span class="text-muted fw-normal ms-1">(1920×1080)</span>
+                                </div>
+                                {% if landing.background_media %}
+                                <div class="mb-3 d-flex align-items-center gap-2">
+                                    {% with bg=landing.background_media.url %}
+                                    {% if '.mp4' in bg or '.webm' in bg %}
+                                        <video src="{{ bg }}" class="rounded-3 border shadow-sm" style="width:100px;height:65px;object-fit:cover;" autoplay loop muted></video>
+                                    {% else %}
+                                        <img src="{{ bg }}" class="rounded-3 border shadow-sm" style="width:100px;height:65px;object-fit:cover;">
+                                    {% endif %}
+                                    {% endwith %}
+                                    <label class="d-flex align-items-center gap-2 small">
+                                        <input type="checkbox" name="clear_background" value="1" class="form-check-input mt-0">
+                                        <span class="text-danger fw-bold">Remove</span>
+                                    </label>
+                                </div>
+                                {% endif %}
+                                <label class="form-label small fw-bold text-secondary">Upload Desktop BG</label>
+                                <input class="form-control rounded-4 py-2 shadow-none border-0 bg-white" type="file" name="background_media" accept="image/*,video/mp4,video/webm,.gif">
+                                <div class="text-muted" style="font-size:0.75rem;margin-top:5px;">JPG, PNG, GIF, MP4, WEBM · ≤ 500KB for images</div>
+                            </div>
+                        </div>
+
+                        <!-- Mobile Background -->
+                        <div class="col-12 col-md-6">
+                            <div class="p-3 bg-light rounded-4 h-100">
+                                <div class="fw-bold small text-dark mb-2 d-flex align-items-center">
+                                    <i class="bi bi-phone me-2 text-success"></i>Mobile
+                                    <span class="text-muted fw-normal ms-1">(1080×1920)</span>
+                                </div>
+                                {% if landing.background_media_mobile %}
+                                <div class="mb-3 d-flex align-items-center gap-2">
+                                    {% with bg=landing.background_media_mobile.url %}
+                                    {% if '.mp4' in bg or '.webm' in bg %}
+                                        <video src="{{ bg }}" class="rounded-3 border shadow-sm" style="width:50px;height:80px;object-fit:cover;" autoplay loop muted></video>
+                                    {% else %}
+                                        <img src="{{ bg }}" class="rounded-3 border shadow-sm" style="width:50px;height:80px;object-fit:cover;">
+                                    {% endif %}
+                                    {% endwith %}
+                                    <label class="d-flex align-items-center gap-2 small">
+                                        <input type="checkbox" name="clear_background_mobile" value="1" class="form-check-input mt-0">
+                                        <span class="text-danger fw-bold">Remove</span>
+                                    </label>
+                                </div>
+                                {% endif %}
+                                <label class="form-label small fw-bold text-secondary">Upload Mobile BG</label>
+                                <input class="form-control rounded-4 py-2 shadow-none border-0 bg-white" type="file" name="background_media_mobile" accept="image/*,video/mp4,video/webm,.gif">
+                                <div class="text-muted" style="font-size:0.75rem;margin-top:5px;">Portrait format · ≤ 300KB for images</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Opacity Slider -->
+                    <div class="p-3 bg-light rounded-4">
+                        <div class="fw-bold small text-dark mb-3 d-flex align-items-center">
+                            <i class="bi bi-sliders me-2 text-warning"></i>Background Opacity
+                            <span class="badge bg-warning text-dark ms-2 rounded-pill" id="opacity-badge">{{ landing.background_opacity|default:"0.35" }}</span>
+                        </div>
+                        <input type="range" class="form-range" name="background_opacity"
+                               id="opacity-slider"
+                               min="0" max="1" step="0.05"
+                               value="{{ landing.background_opacity|default:'0.35' }}">
+                        <div class="d-flex justify-content-between text-muted" style="font-size:0.75rem;">
+                            <span>0 — Invisible</span>
+                            <span>0.5 — Half</span>
+                            <span>1.0 — Full</span>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="card rounded-5 shadow-sm border-0 p-4 p-md-5">
+                    <div class="fw-bold text-primary mb-4 text-uppercase small d-flex align-items-center"><i class="bi bi-star-fill me-2 fs-5"></i> Hero Section</div>
+                    <div class="vstack gap-3">
+                        <input class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="hero_title" placeholder="Main Hero Title" value="{{ landing.hero_title }}">
+                        <input class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="hero_subtitle" placeholder="Sub Headline" value="{{ landing.hero_subtitle }}">
+                        <input class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="trust_line" placeholder="Trust Line" value="{{ landing.trust_line }}">
+                    </div>
+                </div>
+
+                <div class="card rounded-5 shadow-sm border-0 p-4 p-md-5">
+                    <div class="fw-bold text-primary mb-4 text-uppercase small d-flex align-items-center"><i class="bi bi-info-circle-fill me-2 fs-5"></i> About & Values</div>
+                    <div class="vstack gap-3">
+                        <textarea class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="about_text" rows="3" placeholder="About Us Text">{{ landing.about_text }}</textarea>
+                        <textarea class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="mission_text" rows="2" placeholder="Mission">{{ landing.mission_text }}</textarea>
+                        <textarea class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="vision_text" rows="2" placeholder="Vision">{{ landing.vision_text }}</textarea>
+                    </div>
+                </div>
+
+                <div class="card rounded-5 shadow-sm border-0 p-4 p-md-5">
+                    <div class="fw-bold text-primary mb-4 text-uppercase small d-flex align-items-center"><i class="bi bi-question-square-fill me-2 fs-5"></i> FAQ Management</div>
+                    <div class="vstack gap-3">
+                        {% for i in "12" %}
+                        <div class="p-4 rounded-5 bg-light">
+                            <input class="form-control rounded-5 border-0 mb-2 shadow-none" name="faq{{i}}_q" value="{% if i == '1' %}{{ landing.faq1_q }}{% else %}{{ landing.faq2_q }}{% endif %}" placeholder="Question {{i}}">
+                            <textarea class="form-control rounded-5 border-0 shadow-none" name="faq{{i}}_a" rows="2" placeholder="Answer {{i}}">{% if i == '1' %}{{ landing.faq1_a }}{% else %}{{ landing.faq2_a }}{% endif %}</textarea>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="card rounded-5 shadow-sm border-0 p-4 p-md-5">
+                    <div class="fw-bold text-primary mb-4 text-uppercase small d-flex align-items-center"><i class="bi bi-tools me-2 fs-5"></i> Services & Highlights</div>
+                    <div class="vstack gap-3">
+                        <textarea class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="services_text" rows="2" placeholder="Services Text">{{ landing.services_text }}</textarea>
+                    </div>
+                </div>
+
+                <div class="card rounded-5 shadow-sm border-0 p-4 p-md-5">
+                    <div class="fw-bold text-primary mb-4 text-uppercase small d-flex align-items-center"><i class="bi bi-graph-up me-2 fs-5"></i> Projects (Stats)</div>
+                    <div class="vstack gap-3">
+                        <input class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="projects_1" placeholder="Project Stat 1 (e.g. 500+ Orders)" value="{{ landing.projects_1 }}">
+                        <input class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="projects_2" placeholder="Project Stat 2 (e.g. 100+ Products)" value="{{ landing.projects_2 }}">
+                        <input class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="projects_3" placeholder="Project Stat 3 (e.g. 5-Star Reviews)" value="{{ landing.projects_3 }}">
+                    </div>
+                </div>
+
+                <div class="card rounded-5 shadow-sm border-0 p-4 p-md-5">
+                    <div class="fw-bold text-primary mb-4 text-uppercase small d-flex align-items-center"><i class="bi bi-lightning-fill me-2 fs-5"></i> Activities</div>
+                    <div class="vstack gap-3">
+                        <input class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="activities_1" placeholder="Activity 1" value="{{ landing.activities_1 }}">
+                        <input class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="activities_2" placeholder="Activity 2" value="{{ landing.activities_2 }}">
+                        <input class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="activities_3" placeholder="Activity 3" value="{{ landing.activities_3 }}">
+                    </div>
+                </div>
+
+                <div class="card rounded-5 shadow-sm border-0 p-4 p-md-5">
+                    <div class="fw-bold text-primary mb-4 text-uppercase small d-flex align-items-center"><i class="bi bi-chat-quote-fill me-2 fs-5"></i> Testimonials</div>
+                    <div class="vstack gap-3">
+                        <input class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="testimonial_1" placeholder="Testimonial 1" value="{{ landing.testimonial_1 }}">
+                        <input class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="testimonial_2" placeholder="Testimonial 2" value="{{ landing.testimonial_2 }}">
+                        <input class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="testimonial_3" placeholder="Testimonial 3" value="{{ landing.testimonial_3 }}">
+                    </div>
+                </div>
+
+                <div class="card rounded-5 shadow-sm border-0 p-4 p-md-5">
+                    <div class="fw-bold text-primary mb-4 text-uppercase small d-flex align-items-center"><i class="bi bi-people-fill me-2 fs-5"></i> Partners</div>
+                    <div class="vstack gap-3">
+                        <input class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="partner_1" placeholder="Partner 1 Name" value="{{ landing.partner_1 }}">
+                        <input class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="partner_2" placeholder="Partner 2 Name" value="{{ landing.partner_2 }}">
+                        <input class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="partner_3" placeholder="Partner 3 Name" value="{{ landing.partner_3 }}">
+                        <input class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="partner_4" placeholder="Partner 4 Name" value="{{ landing.partner_4 }}">
+                    </div>
+                </div>
+
+                <div class="card rounded-5 shadow-sm border-0 p-4 p-md-5">
+                    <div class="fw-bold text-primary mb-4 text-uppercase small d-flex align-items-center"><i class="bi bi-envelope-fill me-2 fs-5"></i> Newsletter & Contact</div>
+                    <div class="vstack gap-3">
+                        <input class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="newsletter_text" placeholder="Newsletter Headline" value="{{ landing.newsletter_text }}">
+                        <input class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="contact_phone" placeholder="Contact Phone" value="{{ landing.contact_phone }}">
+                        <input class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="contact_email" placeholder="Contact Email" value="{{ landing.contact_email }}">
+                        <input class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="contact_address" placeholder="Contact Address" value="{{ landing.contact_address }}">
+                    </div>
+                </div>
+
+                <div class="card rounded-5 shadow-sm border-0 p-4 p-md-5">
+                    <div class="fw-bold text-primary mb-4 text-uppercase small d-flex align-items-center"><i class="bi bi-briefcase-fill me-2 fs-5"></i> Careers & CTA</div>
+                    <div class="vstack gap-3">
+                        <textarea class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="careers_text" rows="2" placeholder="Careers Section Text">{{ landing.careers_text }}</textarea>
+                        <input class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="cta_title" placeholder="CTA Title (e.g. Ready to Start Shopping?)" value="{{ landing.cta_title }}">
+                        <input class="form-control rounded-5 py-3 shadow-none border-0 bg-light px-4" name="cta_button_text" placeholder="CTA Button Text (e.g. Shop Now)" value="{{ landing.cta_button_text }}">
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-4">
+                    <a class="btn btn-light rounded-5 py-3 px-4 fw-bold shadow-sm flex-grow-1" href="{% url 'landing' %}">
+                        <i class="bi bi-arrow-left me-2"></i>Back
+                    </a>
+                    <button class="btn btn-dark rounded-5 py-3 px-4 fw-bold shadow-sm flex-grow-1" type="submit">
+                        <i class="bi bi-check-circle-fill me-2"></i>Save All Changes
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-
-    <form method="post" class="vstack gap-3">
-        {% csrf_token %}
-        <div class="card rounded-4 shadow-sm border-0 p-3">
-            <div class="fw-semibold mb-2">Hero</div>
-            <input class="form-control rounded-5 mb-2" name="hero_title" placeholder="Hero title" value="{{ landing.hero_title }}">
-            <input class="form-control rounded-5 mb-2" name="hero_subtitle" placeholder="Hero subtitle" value="{{ landing.hero_subtitle }}">
-            <input class="form-control rounded-5" name="trust_line" placeholder="Trust line" value="{{ landing.trust_line }}">
-        </div>
-
-        <div class="card rounded-4 shadow-sm border-0 p-3">
-            <div class="fw-semibold mb-2">About / Mission / Vision / Services</div>
-            <textarea class="form-control rounded-5 mb-2" name="about_text" rows="2" placeholder="About">{{ landing.about_text }}</textarea>
-            <textarea class="form-control rounded-5 mb-2" name="mission_text" rows="2" placeholder="Mission">{{ landing.mission_text }}</textarea>
-            <textarea class="form-control rounded-5 mb-2" name="vision_text" rows="2" placeholder="Vision">{{ landing.vision_text }}</textarea>
-            <textarea class="form-control rounded-5" name="services_text" rows="2" placeholder="Services">{{ landing.services_text }}</textarea>
-        </div>
-
-        <div class="card rounded-4 shadow-sm border-0 p-3">
-            <div class="fw-semibold mb-2">Projects</div>
-            <input class="form-control rounded-5 mb-2" name="projects_1" value="{{ landing.projects_1 }}">
-            <input class="form-control rounded-5 mb-2" name="projects_2" value="{{ landing.projects_2 }}">
-            <input class="form-control rounded-5" name="projects_3" value="{{ landing.projects_3 }}">
-        </div>
-
-        <div class="card rounded-4 shadow-sm border-0 p-3">
-            <div class="fw-semibold mb-2">Activities</div>
-            <input class="form-control rounded-5 mb-2" name="activities_1" value="{{ landing.activities_1 }}">
-            <input class="form-control rounded-5 mb-2" name="activities_2" value="{{ landing.activities_2 }}">
-            <input class="form-control rounded-5" name="activities_3" value="{{ landing.activities_3 }}">
-        </div>
-
-        <div class="card rounded-4 shadow-sm border-0 p-3">
-            <div class="fw-semibold mb-2">Testimonials</div>
-            <input class="form-control rounded-5 mb-2" name="testimonial_1" value="{{ landing.testimonial_1 }}">
-            <input class="form-control rounded-5 mb-2" name="testimonial_2" value="{{ landing.testimonial_2 }}">
-            <input class="form-control rounded-5" name="testimonial_3" value="{{ landing.testimonial_3 }}">
-        </div>
-
-        <div class="card rounded-4 shadow-sm border-0 p-3">
-            <div class="fw-semibold mb-2">Partners</div>
-            <input class="form-control rounded-5 mb-2" name="partner_1" value="{{ landing.partner_1 }}">
-            <input class="form-control rounded-5 mb-2" name="partner_2" value="{{ landing.partner_2 }}">
-            <input class="form-control rounded-5 mb-2" name="partner_3" value="{{ landing.partner_3 }}">
-            <input class="form-control rounded-5" name="partner_4" value="{{ landing.partner_4 }}">
-        </div>
-
-        <div class="card rounded-4 shadow-sm border-0 p-3">
-            <div class="fw-semibold mb-2">FAQ</div>
-            <input class="form-control rounded-5 mb-2" name="faq1_q" value="{{ landing.faq1_q }}" placeholder="FAQ 1 Question">
-            <input class="form-control rounded-5 mb-2" name="faq1_a" value="{{ landing.faq1_a }}" placeholder="FAQ 1 Answer">
-            <input class="form-control rounded-5 mb-2" name="faq2_q" value="{{ landing.faq2_q }}" placeholder="FAQ 2 Question">
-            <input class="form-control rounded-5" name="faq2_a" value="{{ landing.faq2_a }}" placeholder="FAQ 2 Answer">
-        </div>
-
-        <div class="card rounded-4 shadow-sm border-0 p-3">
-            <div class="fw-semibold mb-2">Newsletter</div>
-            <input class="form-control rounded-5" name="newsletter_text" value="{{ landing.newsletter_text }}">
-        </div>
-
-        <div class="card rounded-4 shadow-sm border-0 p-3">
-            <div class="fw-semibold mb-2">Contact</div>
-            <input class="form-control rounded-5 mb-2" name="contact_phone" value="{{ landing.contact_phone }}" placeholder="Phone">
-            <input class="form-control rounded-5 mb-2" name="contact_email" value="{{ landing.contact_email }}" placeholder="Email">
-            <input class="form-control rounded-5" name="contact_address" value="{{ landing.contact_address }}" placeholder="Address">
-        </div>
-
-        <div class="card rounded-4 shadow-sm border-0 p-3">
-            <div class="fw-semibold mb-2">Careers</div>
-            <input class="form-control rounded-5" name="careers_text" value="{{ landing.careers_text }}">
-        </div>
-
-        <div class="card rounded-4 shadow-sm border-0 p-3">
-            <div class="fw-semibold mb-2">CTA</div>
-            <input class="form-control rounded-5 mb-2" name="cta_title" value="{{ landing.cta_title }}" placeholder="CTA Title">
-            <input class="form-control rounded-5" name="cta_button_text" value="{{ landing.cta_button_text }}" placeholder="CTA Button">
-        </div>
-
-        <button class="btn btn-danger rounded-pill w-100" type="submit">
-            <i class="bi bi-check-circle me-1"></i>Save Changes
-        </button>
-    </form>
 </div>
 
+<style>
+    .form-control:focus { background-color: #fff !important; box-shadow: 0 0 0 0.15rem rgba(0,0,0,0.05) !important; }
+    .haptic-btn:active { transform: scale(0.97); transition: transform 0.1s; }
+    #opacity-slider { accent-color: #dc3545; }
+</style>
+
+<script>
+    const slider = document.getElementById('opacity-slider');
+    const badge = document.getElementById('opacity-badge');
+    if (slider && badge) {
+        slider.addEventListener('input', function() {
+            badge.textContent = parseFloat(this.value).toFixed(2);
+        });
+    }
+</script>
 {% endblock %}

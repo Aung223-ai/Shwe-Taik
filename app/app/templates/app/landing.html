@@ -1,163 +1,218 @@
 {% extends 'app/base.html' %}
 {% load static %}
+
 {% block content %}
+<div class="container py-4 position-relative">
 
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-    <div></div>
-    <div class="d-flex gap-2">
-        {% if request.user.is_superuser %}
-        <a class="btn btn-outline-primary rounded-pill" href="{% url 'landing-edit' %}">
-            <i class="bi bi-pencil-square me-1"></i>Edit
-        </a>
-        {% endif %}
-        <a class="btn btn-outline-danger rounded-pill" href="{% url 'home' %}">
-            <i class="bi bi-arrow-left me-1"></i>Back
+    {% if request.user.is_superuser %}
+    <div class="position-absolute top-0 end-0 mt-2 me-2">
+        <a href="{% url 'landing-edit' %}" class="btn btn-dark rounded-4 px-3 py-2 fw-bold shadow-sm haptic-btn small">
+            <i class="bi bi-pencil-square me-1"></i> Edit Landing
         </a>
     </div>
-</div>
+    {% endif %}
 
-<div class="card border-0 shadow-sm rounded-4 mb-4">
-    <div class="card-body p-4 p-md-5">
-        <div class="row align-items-center g-4">
-            <div class="col-12 col-lg-7">
-                <div class="badge bg-danger-subtle text-danger rounded-pill mb-3">
-                    <img width="18" height="18" class="me-1 rounded" src="{% static 'app/images/favicon.png' %}" alt="">
-                    SHWE TAIK
+    <div class="text-center py-5 mb-5">
+        <h1 class="display-3 fw-bold text-dark mb-3">{{ landing.hero_title }}</h1>
+        <p class="fs-5 text-muted mb-4 px-md-5">{{ landing.hero_subtitle }}</p>
+        <a href="{% url 'home' %}" class="btn btn-light border btn-lg rounded-pill px-5 py-3 shadow-lg haptic-btn">
+            Explore Products
+        </a>
+        <div class="mt-4 text-primary fw-bold small">
+            <i class="bi bi-star-fill me-1"></i> {{ landing.trust_line }}
+        </div>
+    </div>
+
+    <div class="py-5 border-top border-bottom mb-5">
+        <div class="row g-5">
+            <div class="col-md-4">
+                <h5 class="fw-bold mb-3">About Us</h5>
+                <p class="text-muted">{{ landing.about_text }}</p>
+            </div>
+            <div class="col-md-4">
+                <h5 class="fw-bold mb-3">Our Mission</h5>
+                <p class="text-muted">{{ landing.mission_text }}</p>
+            </div>
+            <div class="col-md-4">
+                <h5 class="fw-bold mb-3">Our Vision</h5>
+                <p class="text-muted">{{ landing.vision_text }}</p>
+            </div>
+        </div>
+    </div>
+
+    {% if landing.services_text %}
+    <div class="py-5 border-top">
+        <div class="text-center mb-4">
+            <h3 class="fw-bold">Our Services</h3>
+        </div>
+        <p class="text-muted text-center fs-5 px-md-5">{{ landing.services_text }}</p>
+    </div>
+    {% endif %}
+
+    {% if landing.projects_1 or landing.projects_2 or landing.projects_3 %}
+    <div class="py-5 border-top">
+        <h3 class="fw-bold text-center mb-5">Our Numbers</h3>
+        <div class="row g-4 text-center">
+            {% if landing.projects_1 %}
+            <div class="col-4">
+                <div class="bg-primary bg-opacity-10 rounded-5 p-4">
+                    <div class="fw-bold fs-3 text-primary">{{ landing.projects_1 }}</div>
                 </div>
-                <h1 class="h2 mb-3">{{ landing.hero_title|default:"အရည်အသွေးမြင့် ပရိဘောဂများကို တစ်နေရာတည်းမှာ ရရှိနိုင်မယ့်" }}</h1>
-                <p class="text-muted mb-4">{{ landing.trust_line|default:"Trusted by 1000+ Customers · Myanmar’s Leading Home Solution" }}</p>
-                <div class="d-flex flex-column flex-sm-row gap-2">
-                    <a href="{% url 'home' %}" class="btn btn-danger rounded-pill">
-                        <i class="bi bi-bag-fill me-1"></i>Shop Now
-                    </a>
-                    <a href="{% url 'all-cats' %}" class="btn btn-outline-danger rounded-pill">
-                        <i class="bi bi-grid-1x2-fill me-1"></i>Browse Categories
-                    </a>
+            </div>
+            {% endif %}
+            {% if landing.projects_2 %}
+            <div class="col-4">
+                <div class="bg-success bg-opacity-10 rounded-5 p-4">
+                    <div class="fw-bold fs-3 text-success">{{ landing.projects_2 }}</div>
                 </div>
             </div>
-            <div class="col-12 col-lg-5 order-first order-lg-last">
-                <div class="ratio ratio-1x1 mb-3 mb-lg-0">
-                    <img src="{% static 'app/images/favicon.png' %}" class="w-100 h-100 object-fit-cover rounded-4 border" alt="">
+            {% endif %}
+            {% if landing.projects_3 %}
+            <div class="col-4">
+                <div class="bg-warning bg-opacity-10 rounded-5 p-4">
+                    <div class="fw-bold fs-3 text-warning">{{ landing.projects_3 }}</div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if landing.activities_1 or landing.activities_2 or landing.activities_3 %}
+    <div class="py-5 border-top">
+        <h3 class="fw-bold text-center mb-5">What We Do</h3>
+        <div class="row g-4">
+            {% if landing.activities_1 %}
+            <div class="col-md-4">
+                <div class="bg-light rounded-5 p-4 text-center h-100">
+                    <i class="bi bi-lightning-charge-fill fs-1 text-primary mb-3 d-block"></i>
+                    <p class="fw-semibold mb-0">{{ landing.activities_1 }}</p>
+                </div>
+            </div>
+            {% endif %}
+            {% if landing.activities_2 %}
+            <div class="col-md-4">
+                <div class="bg-light rounded-5 p-4 text-center h-100">
+                    <i class="bi bi-geo-alt-fill fs-1 text-success mb-3 d-block"></i>
+                    <p class="fw-semibold mb-0">{{ landing.activities_2 }}</p>
+                </div>
+            </div>
+            {% endif %}
+            {% if landing.activities_3 %}
+            <div class="col-md-4">
+                <div class="bg-light rounded-5 p-4 text-center h-100">
+                    <i class="bi bi-award-fill fs-1 text-warning mb-3 d-block"></i>
+                    <p class="fw-semibold mb-0">{{ landing.activities_3 }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if landing.testimonial_1 or landing.testimonial_2 or landing.testimonial_3 %}
+    <div class="py-5 border-top">
+        <h3 class="fw-bold text-center mb-5">What Customers Say</h3>
+        <div class="row g-4">
+            {% if landing.testimonial_1 %}
+            <div class="col-md-4">
+                <div class="bg-white border rounded-5 p-4 shadow-sm h-100">
+                    <i class="bi bi-chat-quote-fill text-danger fs-3 mb-3 d-block"></i>
+                    <p class="text-muted fst-italic mb-0">"{{ landing.testimonial_1 }}"</p>
+                </div>
+            </div>
+            {% endif %}
+            {% if landing.testimonial_2 %}
+            <div class="col-md-4">
+                <div class="bg-white border rounded-5 p-4 shadow-sm h-100">
+                    <i class="bi bi-chat-quote-fill text-primary fs-3 mb-3 d-block"></i>
+                    <p class="text-muted fst-italic mb-0">"{{ landing.testimonial_2 }}"</p>
+                </div>
+            </div>
+            {% endif %}
+            {% if landing.testimonial_3 %}
+            <div class="col-md-4">
+                <div class="bg-white border rounded-5 p-4 shadow-sm h-100">
+                    <i class="bi bi-chat-quote-fill text-success fs-3 mb-3 d-block"></i>
+                    <p class="text-muted fst-italic mb-0">"{{ landing.testimonial_3 }}"</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if landing.partner_1 or landing.partner_2 or landing.partner_3 or landing.partner_4 %}
+    <div class="py-5 border-top">
+        <h3 class="fw-bold text-center mb-5">Our Partners</h3>
+        <div class="d-flex flex-wrap justify-content-center gap-3">
+            {% if landing.partner_1 %}<div class="badge bg-light text-dark border rounded-pill px-4 py-2 fs-6 fw-semibold shadow-sm">{{ landing.partner_1 }}</div>{% endif %}
+            {% if landing.partner_2 %}<div class="badge bg-light text-dark border rounded-pill px-4 py-2 fs-6 fw-semibold shadow-sm">{{ landing.partner_2 }}</div>{% endif %}
+            {% if landing.partner_3 %}<div class="badge bg-light text-dark border rounded-pill px-4 py-2 fs-6 fw-semibold shadow-sm">{{ landing.partner_3 }}</div>{% endif %}
+            {% if landing.partner_4 %}<div class="badge bg-light text-dark border rounded-pill px-4 py-2 fs-6 fw-semibold shadow-sm">{{ landing.partner_4 }}</div>{% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="py-5 border-top">
+        <h3 class="fw-bold text-center mb-5">Frequently Asked Questions</h3>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                {% if landing.faq1_q %}
+                <div class="bg-light p-4 rounded-4 mb-3">
+                    <h6 class="fw-bold text-dark mb-2">{{ landing.faq1_q }}</h6>
+                    <p class="text-muted small mb-0">{{ landing.faq1_a }}</p>
+                </div>
+                {% endif %}
+                {% if landing.faq2_q %}
+                <div class="bg-light p-4 rounded-4">
+                    <h6 class="fw-bold text-dark mb-2">{{ landing.faq2_q }}</h6>
+                    <p class="text-muted small mb-0">{{ landing.faq2_a }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if landing.careers_text %}
+    <div class="py-5 border-top">
+        <div class="bg-dark text-white rounded-5 p-5 text-center">
+            <i class="bi bi-briefcase-fill fs-1 mb-3 opacity-75 d-block"></i>
+            <h4 class="fw-bold mb-3">Careers</h4>
+            <p class="text-white-50 mb-0">{{ landing.careers_text }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="py-5 border-top rounded-5 shadow-sm bg-white p-5">
+        <div class="row align-items-center">
+            <div class="col-lg-7 mb-4 mb-lg-0">
+                <h2 class="fw-bold mb-2">{{ landing.cta_title }}</h2>
+                <p class="text-muted">{{ landing.newsletter_text }}</p>
+                {% if landing.cta_button_text %}
+                <a href="{% url 'home' %}" class="btn btn-dark rounded-pill px-5 py-3 fw-bold shadow-sm haptic-btn mt-2">
+                    {{ landing.cta_button_text }} <i class="bi bi-arrow-right ms-2"></i>
+                </a>
+                {% endif %}
+            </div>
+            <div class="col-lg-5">
+                <div class="d-flex flex-column gap-2 text-lg-end">
+                    {% if landing.contact_phone %}<div class="text-dark fw-bold"><i class="bi bi-telephone-fill me-2 text-primary"></i>{{ landing.contact_phone }}</div>{% endif %}
+                    {% if landing.contact_email %}<div class="text-dark fw-bold"><i class="bi bi-envelope-fill me-2 text-primary"></i>{{ landing.contact_email }}</div>{% endif %}
+                    {% if landing.contact_address %}<div class="text-muted small mt-2"><i class="bi bi-geo-alt-fill me-1 text-primary"></i>{{ landing.contact_address }}</div>{% endif %}
                 </div>
             </div>
         </div>
     </div>
+
 </div>
 
-<div class="row g-3 mb-4">
-    <div class="col-6 col-md-3"><div class="card text-center bg-dark text-white rounded-4 border-0 h-100"><div class="card-body"><div class="fw-semibold">500+</div><div class="small">Products</div></div></div></div>
-    <div class="col-6 col-md-3"><div class="card text-center bg-dark text-white rounded-4 border-0 h-100"><div class="card-body"><div class="fw-semibold">24hr</div><div class="small">Delivery</div></div></div></div>
-    <div class="col-6 col-md-3"><div class="card text-center bg-dark text-white rounded-4 border-0 h-100"><div class="card-body"><div class="fw-semibold">Best</div><div class="small">Price Guarantee</div></div></div></div>
-    <div class="col-6 col-md-3"><div class="card text-center bg-dark text-white rounded-4 border-0 h-100"><div class="card-body"><div class="fw-semibold">100%</div><div class="small">Quality Assurance</div></div></div></div>
-</div>
-
-<div class="mb-4">
-    <h5>About Us</h5>
-    <p class="text-muted mb-0">{{ landing.about_text|default:"Shwe Taik is a local-first ecommerce brand delivering quality products with fast, friendly service." }}</p>
-</div>
-
-<div class="row g-3 mb-4">
-    <div class="col-12 col-md-4"><div class="card h-100 rounded-4 shadow-sm border-0"><div class="card-body"><div class="fw-semibold">Mission</div><div class="text-muted small">{{ landing.mission_text|default:"Make shopping simple, reliable, and affordable for everyone." }}</div></div></div></div>
-    <div class="col-12 col-md-4"><div class="card h-100 rounded-4 shadow-sm border-0"><div class="card-body"><div class="fw-semibold">Vision</div><div class="text-muted small">{{ landing.vision_text|default:"Become Myanmar’s most trusted lifestyle marketplace." }}</div></div></div></div>
-    <div class="col-12 col-md-4"><div class="card h-100 rounded-4 shadow-sm border-0"><div class="card-body"><div class="fw-semibold">Services</div><div class="text-muted small">{{ landing.services_text|default:"Fast delivery, secure payments, easy returns." }}</div></div></div></div>
-</div>
-
-<div class="row g-3 mb-4">
-    <div class="col-12 col-md-4"><div class="card h-100 rounded-4 border"><div class="card-body"><div class="fw-semibold">{{ landing.projects_1|default:"Community Storefront" }}</div><div class="text-muted small">Supporting local makers and small brands.</div></div></div></div>
-    <div class="col-12 col-md-4"><div class="card h-100 rounded-4 border"><div class="card-body"><div class="fw-semibold">{{ landing.projects_2|default:"Eco Packaging" }}</div><div class="text-muted small">Reducing waste with sustainable packing.</div></div></div></div>
-    <div class="col-12 col-md-4"><div class="card h-100 rounded-4 border"><div class="card-body"><div class="fw-semibold">{{ landing.projects_3|default:"Digital Loyalty" }}</div><div class="text-muted small">Rewards for repeat customers.</div></div></div></div>
-</div>
-
-<div class="row g-3 mb-4">
-    <div class="col-12 col-md-4"><div class="card h-100 rounded-4 border"><div class="card-body"><div class="fw-semibold">{{ landing.activities_1|default:"Weekend Flash Sales" }}</div><div class="text-muted small">Limited-time discounts every weekend.</div></div></div></div>
-    <div class="col-12 col-md-4"><div class="card h-100 rounded-4 border"><div class="card-body"><div class="fw-semibold">{{ landing.activities_2|default:"Live Product Demos" }}</div><div class="text-muted small">Real-time product showcases.</div></div></div></div>
-    <div class="col-12 col-md-4"><div class="card h-100 rounded-4 border"><div class="card-body"><div class="fw-semibold">{{ landing.activities_3|default:"Charity Partnerships" }}</div><div class="text-muted small">Give-back programs with local NGOs.</div></div></div></div>
-</div>
-
-<div class="row g-3 mb-4">
-    <div class="col-12 col-md-4"><div class="card h-100 rounded-4 shadow-sm border-0"><div class="card-body"><div class="fw-semibold">{{ landing.testimonial_1|default:"“အရမ်းမြန်တယ်”" }}</div><div class="text-muted small">Delivery က တစ်နေ့အတွင်းရောက်လာတယ်။</div></div></div></div>
-    <div class="col-12 col-md-4"><div class="card h-100 rounded-4 shadow-sm border-0"><div class="card-body"><div class="fw-semibold">{{ landing.testimonial_2|default:"“အရည်အသွေးကောင်း”" }}</div><div class="text-muted small">ပစ္စည်းအရည်အသွေးကို စိတ်ချနိုင်တယ်။</div></div></div></div>
-    <div class="col-12 col-md-4"><div class="card h-100 rounded-4 shadow-sm border-0"><div class="card-body"><div class="fw-semibold">{{ landing.testimonial_3|default:"“ဝန်ဆောင်မှုကောင်း”" }}</div><div class="text-muted small">Support တုံ့ပြန်မှုမြန်တယ်။</div></div></div></div>
-</div>
-
-<div class="mb-4">
-    <h5 class="mb-3">Partners</h5>
-    <div class="row g-2">
-        <div class="col-6 col-md-3"><div class="card rounded-4 text-center"><div class="card-body fw-semibold text-muted">{{ landing.partner_1|default:"Partner A" }}</div></div></div>
-        <div class="col-6 col-md-3"><div class="card rounded-4 text-center"><div class="card-body fw-semibold text-muted">{{ landing.partner_2|default:"Partner B" }}</div></div></div>
-        <div class="col-6 col-md-3"><div class="card rounded-4 text-center"><div class="card-body fw-semibold text-muted">{{ landing.partner_3|default:"Partner C" }}</div></div></div>
-        <div class="col-6 col-md-3"><div class="card rounded-4 text-center"><div class="card-body fw-semibold text-muted">{{ landing.partner_4|default:"Partner D" }}</div></div></div>
-    </div>
-</div>
-
-<div class="mb-4" id="faq">
-    <h5 class="mb-3">FAQ</h5>
-    <div class="accordion" id="faqAccordion">
-        <div class="accordion-item rounded-top-4">
-            <h2 class="accordion-header">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faqOne">
-                    {{ landing.faq1_q|default:"Delivery ဘယ်နှစ်ရက်ကြာလဲ?" }}
-                </button>
-            </h2>
-            <div id="faqOne" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
-                <div class="accordion-body">{{ landing.faq1_a|default:"City အတွင်း 24hr၊ အဝေး 2–4 days." }}</div>
-            </div>
-        </div>
-        <div class="accordion-item rounded-bottom-4">
-            <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqTwo">
-                    {{ landing.faq2_q|default:"Warranty ပါလား?" }}
-                </button>
-            </h2>
-            <div id="faqTwo" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                <div class="accordion-body">{{ landing.faq2_a|default:"Product အလိုက် warranty policy ရှိပါတယ်။" }}</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="card rounded-4 shadow-sm border-0 mb-4">
-    <div class="card-body">
-        <h5 class="mb-3">Newsletter</h5>
-        <div class="text-muted small mb-3">{{ landing.newsletter_text|default:"Discount & Updates အတွက် email ထားခဲ့ပါ။" }}</div>
-        <div class="row g-2">
-            <div class="col-12 col-md">
-                <input class="form-control" placeholder="Email address">
-            </div>
-            <div class="col-12 col-md-auto">
-                <button class="btn btn-danger rounded-pill w-100"><i class="bi bi-envelope me-1"></i>Subscribe</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row g-3 mb-4">
-    <div class="col-12 col-lg-6">
-        <div class="card rounded-4 h-100">
-            <div class="card-body">
-                <h5 class="mb-3">Contact Us</h5>
-                <div class="text-muted small mb-1">Phone: {{ landing.contact_phone|default:"09-123-456-789" }}</div>
-                <div class="text-muted small mb-1">Email: {{ landing.contact_email|default:"support@shwetaik.com" }}</div>
-                <div class="text-muted small">Address: {{ landing.contact_address|default:"Yangon, Myanmar" }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 col-lg-6">
-        <div class="card rounded-4 h-100">
-            <div class="card-body">
-                <h5 class="mb-3">Careers</h5>
-                <div class="fw-semibold mb-2">Join Our Team</div>
-                <div class="text-muted small">{{ landing.careers_text|default:"Open roles in sales, delivery, and customer support. Send your CV to careers@shwetaik.com." }}</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="text-center py-4">
-    <h5 class="mb-3">{{ landing.cta_title|default:"Start Your Dream Home Today" }}</h5>
-    <a href="{% url 'home' %}" class="btn btn-danger rounded-pill">
-        <i class="bi bi-chat-dots me-1"></i>{{ landing.cta_button_text|default:"Contact Sales" }}
-    </a>
-</div>
-
+<style>
+    .container { max-width: 960px; }
+    h1, h2, h3 { letter-spacing: -0.02em; }
+    .haptic-btn:active {
+        transform: scale(0.97);
+        transition: transform 0.1s;
+    }
+</style>
 {% endblock %}

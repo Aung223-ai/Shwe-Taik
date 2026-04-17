@@ -32,6 +32,7 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'app.apps.AppConfig',
     'category',
     'django.contrib.humanize',
@@ -69,13 +70,28 @@ TEMPLATES = [
                 'app.context_processors.user_role',
                 'app.context_processors.cart_count',
                 'app.context_processors.chat_unread_count',
+                'app.context_processors.branding',
             ],
         },
     },
 ]
 
 WSGI_APPLICATION = 'app.wsgi.application'
+ASGI_APPLICATION = 'app.asgi.application'
 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
+
+# Caching
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases

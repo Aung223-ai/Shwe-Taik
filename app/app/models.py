@@ -19,6 +19,7 @@ class Message(models.Model):
     channel = models.CharField(max_length=20, default='support')
     text = models.TextField()
     is_staff_response = models.BooleanField(default=False)
+    is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -57,6 +58,11 @@ class LandingContent(models.Model):
     careers_text = models.CharField(max_length=255, blank=True, default='')
     cta_title = models.CharField(max_length=255, blank=True, default='')
     cta_button_text = models.CharField(max_length=100, blank=True, default='')
+    favicon = models.ImageField(upload_to='branding/', blank=True, null=True)
+    logo = models.ImageField(upload_to='branding/', blank=True, null=True)
+    background_media = models.FileField(upload_to='branding/backgrounds/', blank=True, null=True)
+    background_media_mobile = models.FileField(upload_to='branding/backgrounds/', blank=True, null=True)
+    background_opacity = models.FloatField(default=0.35)
 
 
 class HomeContent(models.Model):
@@ -66,9 +72,16 @@ class HomeContent(models.Model):
     photo_3 = models.CharField(max_length=255, blank=True, default='')
     best_title = models.CharField(max_length=255, blank=True, default='')
     recommend_title = models.CharField(max_length=255, blank=True, default='')
-    hero_photo_1 = models.ImageField(upload_to='home/', blank=True, null=True)
-    hero_photo_2 = models.ImageField(upload_to='home/', blank=True, null=True)
-    hero_photo_3 = models.ImageField(upload_to='home/', blank=True, null=True)
+    carousel_interval = models.IntegerField(default=5) # Seconds
+    hero_photo_1 = models.ImageField(upload_to='home/', blank=True, null=True) # Legacy
+    hero_photo_2 = models.ImageField(upload_to='home/', blank=True, null=True) # Legacy
+    hero_photo_3 = models.ImageField(upload_to='home/', blank=True, null=True) # Legacy
+
+
+class HomeCarouselImage(models.Model):
+    home_content = models.ForeignKey(HomeContent, on_delete=models.CASCADE, related_name='carousel_images')
+    image = models.ImageField(upload_to='home/carousel/')
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class HomeMedia(models.Model):

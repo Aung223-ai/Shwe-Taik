@@ -52,6 +52,8 @@ class Order(models.Model):
     payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES)
     kpay_screenshot = models.ImageField(blank=True, null=True, upload_to='kpay/')
     status = models.CharField(max_length=12, choices=STATUS_CHOICES, default='pending')
+    phone_number = models.CharField(max_length=50, blank=True, null=True)
+    delivery_address = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 

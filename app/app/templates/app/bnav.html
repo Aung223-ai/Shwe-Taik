@@ -1,51 +1,93 @@
-<div class="container-xl px-0">
-    <div class="bg-danger rounded-pill p-2 shadow mx-auto">
-        <div class="row g-1">
-            <div class="col">
-                <a class="btn w-100 rounded-pill {% if request.resolver_match.url_name == 'home' %}btn-light text-danger{% else %}btn-danger text-white{% endif %}" href="{% url 'home' %}">
-                    <i class="bi bi-house-fill d-block"></i>
-                    <span class="small">Home</span>
-                </a>
-            </div>
-            <div class="col">
-                <a class="btn w-100 rounded-pill {% if request.resolver_match.url_name == 'all-cats' %}btn-light text-danger{% else %}btn-danger text-white{% endif %}" href="{% url 'all-cats' %}">
-                    <i class="bi bi-grid-1x2-fill d-block"></i>
-                    <span class="small">Categories</span>
-                </a>
-            </div>
-            {% if request.user.is_authenticated %}
-            <div class="col">
-                <a class="btn w-100 rounded-pill {% if request.resolver_match.url_name == 'favorites' %}btn-light text-danger{% else %}btn-danger text-white{% endif %}" href="{% url 'favorites' %}">
-                    <i class="bi bi-heart-fill d-block"></i>
-                    <span class="small">Favorites</span>
-                </a>
-            </div>
-            <div class="col">
-                {% if user_role == 'admin' or user_role == 'staff' %}
-                <a class="btn w-100 rounded-pill position-relative {% if request.resolver_match.url_name == 'message-center' %}btn-light text-danger{% else %}btn-danger text-white{% endif %}" href="{% url 'message-center' %}">
-                {% else %}
-                <a class="btn w-100 rounded-pill position-relative {% if request.resolver_match.url_name == 'messages' %}btn-light text-danger{% else %}btn-danger text-white{% endif %}" href="{% url 'messages' %}">
+{% load static %}
+<div class="fixed-bottom p-3 d-flex justify-content-center">
+    <ul class="nav nav-pills bg-dark rounded-pill shadow-lg d-flex align-items-center" 
+        id="pillNav" role="tablist"
+        style="width: fit-content; padding: 6px; gap: 4px; --bs-nav-pills-link-active-bg: #dc3545;">
+        
+        <li class="nav-item">
+            <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}">
+                <i class="bi bi-house-fill"></i>
+            </a>
+        </li>
+        
+        <li class="nav-item">
+            <a class="nav-link {% if '/shop/' in request.path and '/favorites/' not in request.path %}active{% endif %}"
+                href="{% url 'all-cats' %}">
+                <i class="bi bi-grid-fill"></i>
+            </a>
+        </li>
+        
+        {% if request.user.is_authenticated %}
+        <li class="nav-item">
+            <a class="nav-link {% if '/favorites/' in request.path %}active{% endif %}"
+                href="{% url 'favorites' %}">
+                <i class="bi bi-heart-fill"></i>
+            </a>
+        </li>
+        
+        <li class="nav-item">
+            <a class="nav-link {% if '/messages/' in request.path or '/message-center/' in request.path %}active{% endif %} position-relative"
+                href="{% url 'message-center' %}">
+                <i class="bi bi-chat-dots-fill"></i>
+                {% if chat_unread_count > 0 %}
+                <span class="position-absolute bg-danger border border-2 border-dark rounded-circle"
+                    style="top: 15px; right: 15px; width: 12px; height: 12px;">
+                </span>
                 {% endif %}
-                    <i class="bi bi-chat-fill d-block"></i>
-                    <span class="small">Chat</span>
-                    {% if chat_unread_count > 0 %}
-                    <span class="position-absolute top-0 start-100 translate-middle p-1 bg-white border border-danger rounded-circle">
-                        <span class="visually-hidden">Unread chat</span>
-                    </span>
-                    {% endif %}
-                </a>
-            </div>
-            {% endif %}
-            <div class="col">
-                {% if request.user.is_authenticated %}
-                <a class="btn w-100 rounded-pill {% if request.resolver_match.url_name == 'profile' %}btn-light text-danger{% else %}btn-danger text-white{% endif %}" href="{% url 'profile' %}">
-                {% else %}
-                <a class="btn w-100 rounded-pill {% if request.resolver_match.url_name == 'login' %}btn-light text-danger{% else %}btn-danger text-white{% endif %}" href="{% url 'login' %}">
-                {% endif %}
-                    <i class="bi bi-person-fill d-block"></i>
-                    <span class="small">Profile</span>
-                </a>
-            </div>
-        </div>
-    </div>
+            </a>
+        </li>
+        
+        <li class="nav-item">
+            <a class="nav-link {% if '/profile/' in request.path %}active{% endif %}"
+                href="{% url 'profile' %}">
+                <i class="bi bi-person-fill"></i>
+            </a>
+        </li>
+        {% else %}
+        <li class="nav-item">
+            <a class="nav-link {% if request.path == '/login/' %}active{% endif %}" href="{% url 'login' %}">
+                <i class="bi bi-person-fill"></i>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
 </div>
+
+<style>
+    #pillNav {
+        display: flex;
+        flex-wrap: nowrap;
+    }
+
+    #pillNav .nav-link {
+        color: rgba(255, 255, 255, 0.6);
+        aspect-ratio: 1 / 1;
+        width: 65px;      /* Button size အကြီး */
+        height: 65px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50% !important;
+        font-size: 1.6rem; /* Icon size အကြီး */
+        transition: all 0.2s ease;
+        padding: 0;
+    }
+
+    #pillNav .nav-link.active {
+        color: #fff;
+        background-color: #dc3545 !important;
+    }
+
+    #pillNav .nav-link:active {
+        transform: scale(0.95);
+    }
+
+    /* Mobile screen အတွက် ချိန်ညှိချက် */
+    @media (max-width: 576px) {
+        #pillNav .nav-link {
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+        }
+    }
+</style>

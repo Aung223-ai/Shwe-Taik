@@ -12,7 +12,7 @@ urlpatterns = [
     path('edit/section/<int:section_id>/delete/', views.home_section_delete, name='home-section-delete'),
     path('landing/', views.landing_view, name='landing'),
     path('landing/edit/', views.landing_edit_view, name='landing-edit'),
-    path('cats/', include('category.urls')),
+    path('shop/', include('category.urls')),
     path('login/', views.login_view, name='login'),
     path('register/', views.register_view, name='register'),
     path('profile/', views.profile_view, name='profile'),
