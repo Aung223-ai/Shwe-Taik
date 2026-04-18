@@ -86,9 +86,16 @@
     const channel = app?.dataset.channel || 'support';
     const customerId = app?.dataset.customer || '';
     const userId = app?.dataset.user;
+    let lastMessageId = 0;
 
     function scrollToBottom() { chatBody.scrollTop = chatBody.scrollHeight; }
     scrollToBottom();
+
+    // CSRF Token Helper
+    function getCookie(name) {
+        const v = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(name + '='));
+        return v ? decodeURIComponent(v.split('=').slice(1).join('=')) : '';
+    }
 
     input.addEventListener('input', function() {
         this.style.height = 'auto';
@@ -121,39 +128,34 @@
         socket.onopen = () => { setInputState(false, 'Type a message...'); };
         socket.onmessage = (e) => {
             const data = JSON.parse(e.data);
-            const isMe = String(data.sender_id) === String(userId);
-            
-            const wrapper = document.createElement('div');
-            wrapper.className = `d-flex ${isMe ? 'justify-content-end' : ''}`;
-            
-            if (!isMe) {
-                const avatar = document.createElement('div');
-                avatar.className = 'bg-dark text-white rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm';
-                avatar.style.width = '45px'; avatar.style.height = '45px';
-                avatar.innerHTML = `<span class="fs-5">${(data.sender_name || '?')[0].toUpperCase()}</span>`;
-                wrapper.appendChild(avatar);
-            }
-            
-            const bubble = document.createElement('div');
-            bubble.className = `p-3 px-4 rounded-5 shadow-sm ${isMe ? 'bg-danger text-white' : 'bg-white border'}`;
-            bubble.style.maxWidth = '80%';
-            bubble.innerHTML = `<div class="fs-5" style="white-space: pre-wrap;">${data.message}</div>`;
-            wrapper.appendChild(bubble);
-            
-            chatBody.appendChild(wrapper);
-            scrollToBottom();
+            if (data.type === 'chat_message') appendMessage(data);
         };
         socket.onclose = () => { setTimeout(connectSocket, 1500); };
+        socket.onerror = () => { setInputState(false, 'Standard Web Mode (No Live Socket)'); };
     }
     connectSocket();
 
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const msg = input.value.trim();
-        if (msg && socket.readyState === WebSocket.OPEN) {
+        if (!msg) return;
+
+        if (socket && socket.readyState === WebSocket.OPEN) {
             socket.send(JSON.stringify({ message: msg }));
             input.value = '';
             input.style.height = 'auto';
+        } else {
+            // Fallback for PythonAnywhere
+            const response = await fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                body: JSON.stringify({ message: msg })
+            });
+            const result = await response.json();
+            if (result.status === 'sent') {
+                appendMessage(result.message);
+                input.value = '';
+            }
         }
     });
 </script>

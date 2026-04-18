@@ -353,6 +353,41 @@ def profile_edit_view(request):
 @login_required(login_url='login')
 def messages_view(request):
     user = request.user
+    
+    # --- HTTP POST Fallback for PythonAnywhere ---
+    if request.method == 'POST':
+        import json
+        from django.http import JsonResponse
+        try:
+            data = json.loads(request.body)
+            message_text = data.get('message')
+            channel = request.GET.get('channel', 'support')
+            customer_id = request.GET.get('customer') if (user.is_staff or user.is_superuser) else user.id
+            
+            customer = None
+            if customer_id:
+                customer = User.objects.filter(id=customer_id).first()
+
+            msg = Message.objects.create(
+                user=user,
+                customer=customer,
+                text=message_text,
+                channel=channel,
+                is_staff_response=user.is_staff or user.is_superuser
+            )
+            return JsonResponse({
+                'status': 'sent',
+                'message': {
+                    'id': msg.id,
+                    'text': msg.text,
+                    'sender_id': user.id,
+                    'sender_name': user.username,
+                    'created_at': msg.created_at.isoformat()
+                }
+            })
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
     context = {}
 
     profile, _ = Profile.objects.get_or_create(user=user)
