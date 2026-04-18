@@ -353,7 +353,45 @@ def profile_edit_view(request):
 @login_required(login_url='login')
 def messages_view(request):
     user = request.user
-    
+
+    # --- Polling: Get new messages only ---
+    from .context_processors import chat_unread_count
+    if request.GET.get('poll') == '1':
+        from django.http import JsonResponse
+        last_id = int(request.GET.get('last_id', 0))
+        channel = request.GET.get('channel', 'support')
+        
+        if channel == 'staff_admin':
+            new_msgs = Message.objects.filter(channel='staff_admin', id__gt=last_id).order_by('created_at')
+        else:
+            customer_id = request.GET.get('customer') if (user.is_staff or user.is_superuser) else user.id
+            if not customer_id:
+                return JsonResponse({'messages': []})
+            new_msgs = Message.objects.filter(channel='support', customer_id=customer_id, id__gt=last_id).order_by('created_at')
+
+        # Mark incoming messages as read during poll
+        is_staff = user.is_staff or user.is_superuser
+        new_msgs.filter(is_staff_response=not is_staff, is_read=False).update(is_read=True)
+
+        data = []
+        for m in new_msgs:
+            # Don't send back the message the user just sent themselves (optional, but cleaner)
+            if m.user_id != user.id:
+                data.append({
+                    'id': m.id,
+                    'text': m.text,
+                    'sender_id': m.user_id,
+                    'sender_name': m.user.username,
+                    'created_at': m.created_at.isoformat()
+                })
+        
+        # Return the last_id as well to keep client updated
+        current_last_id = new_msgs.last().id if new_msgs.exists() else last_id
+        
+        # Get latest unread count
+        unread_data = chat_unread_count(request)
+        return JsonResponse({'messages': data, 'last_id': current_last_id, 'unread_count': unread_data['chat_unread_count']})
+
     # --- HTTP POST Fallback for PythonAnywhere ---
     if request.method == 'POST':
         import json

@@ -27,7 +27,7 @@
                     {% endif %}
 
                     {% for msg in thread %}
-                        <div class="d-flex {% if msg.user_id == request.user.id %}justify-content-end{% endif %}">
+                        <div class="d-flex {% if msg.user_id == request.user.id %}justify-content-end{% endif %} msg-row" data-id="{{ msg.id }}">
                             {% if msg.user_id != request.user.id %}
                                 <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0 shadow-sm" style="width: 45px; height: 45px;">
                                     <span class="fs-5">{{ msg.user.username|slice:":1"|upper }}</span>
@@ -86,7 +86,20 @@
     const channel = app?.dataset.channel || 'support';
     const customerId = app?.dataset.customer || '';
     const userId = app?.dataset.user;
+    
+    // Initialize lastMessageId from existing messages
     let lastMessageId = 0;
+    const rows = document.querySelectorAll('.msg-row');
+    if(rows.length > 0) {
+        lastMessageId = Math.max(...Array.from(rows).map(r => parseInt(r.dataset.id)));
+    }
+
+    // Adaptive Polling Variables
+    let currentPollDelay = 5000; // စတင်ချိန် ၅ စက္ကန့်
+    const MIN_DELAY = 2000;      // အမြန်ဆုံး ၂ စက္ကန့်
+    const MAX_DELAY = 10000;     // အနှေးဆုံး ၁၀ စက္ကန့်
+    let pollTimeout = null;
+    let activityTimer = null;
 
     function scrollToBottom() { chatBody.scrollTop = chatBody.scrollHeight; }
     scrollToBottom();
@@ -97,14 +110,24 @@
         return v ? decodeURIComponent(v.split('=').slice(1).join('=')) : '';
     }
 
+    function boostPolling() {
+        currentPollDelay = MIN_DELAY;
+        if (pollTimeout) {
+            clearTimeout(pollTimeout);
+            runPollingStep();
+        }
+    }
+
     input.addEventListener('input', function() {
         this.style.height = 'auto';
         this.style.height = (this.scrollHeight) + 'px';
+        boostPolling(); // စာရိုက်နေချိန်တွင် Polling မြန်စေရန်
     });
 
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
+            boostPolling();
             form.dispatchEvent(new Event('submit'));
         }
     });
@@ -122,6 +145,35 @@
         if (sendBtn) sendBtn.disabled = disabled;
     }
 
+    function appendMessage(data) {
+        // Update lastMessageId if the new message has a higher ID
+        const msgId = data.id || data.message_id;
+        if (msgId && msgId > lastMessageId) {
+            lastMessageId = msgId;
+        }
+
+        const isMe = String(data.sender_id) === String(userId);
+        const wrapper = document.createElement('div');
+        wrapper.className = `d-flex ${isMe ? 'justify-content-end' : ''} msg-row`;
+        wrapper.dataset.id = msgId;
+        
+        if (!isMe) {
+            const avatar = document.createElement('div');
+            avatar.className = 'bg-dark text-white rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0 shadow-sm';
+            avatar.style.width = '45px'; avatar.style.height = '45px';
+            avatar.innerHTML = `<span class="fs-5">${(data.sender_name || '?')[0].toUpperCase()}</span>`;
+            wrapper.appendChild(avatar);
+        }
+        
+        const bubble = document.createElement('div');
+        bubble.className = `p-3 px-4 rounded-5 shadow-sm ${isMe ? 'bg-danger text-white' : 'bg-white border'}`;
+        bubble.style.maxWidth = '80%';
+        bubble.innerHTML = `<div class="fs-5" style="white-space: pre-wrap;">${data.message || data.text}</div>`;
+        wrapper.appendChild(bubble);
+        chatBody.appendChild(wrapper);
+        scrollToBottom();
+    }
+
     function connectSocket() {
         if (!wsUrl) { setInputState(true, 'Select a customer to start.'); return; }
         socket = new WebSocket(wsUrl);
@@ -131,9 +183,47 @@
             if (data.type === 'chat_message') appendMessage(data);
         };
         socket.onclose = () => { setTimeout(connectSocket, 1500); };
-        socket.onerror = () => { setInputState(false, 'Standard Web Mode (No Live Socket)'); };
+        socket.onerror = () => { 
+            setInputState(false, 'Standard Web Mode (Polling Active)');
+            startPolling(); // Start polling if WebSocket fails
+        };
     }
     connectSocket();
+
+    // --- Polling Logic ---
+    function startPolling() {
+        if (pollTimeout) return;
+        runPollingStep();
+    }
+
+    async function runPollingStep() {
+        if (socket && socket.readyState === WebSocket.OPEN) return;
+
+        const url = `${window.location.pathname}${window.location.search}${window.location.search ? '&' : '?'}poll=1&last_id=${lastMessageId}`;
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.messages && data.messages.length > 0) {
+                data.messages.forEach(msg => appendMessage(msg));
+                lastMessageId = data.last_id;
+                currentPollDelay = MIN_DELAY; // စာသစ်ရှိရင် မြန်မြန်စစ်မယ်
+            } else {
+                // စာသစ်မရှိရင် တဖြည်းဖြည်းချင်း Delay ကို တိုးသွားမယ် (MAX_DELAY အထိ)
+                currentPollDelay = Math.min(currentPollDelay + 1000, MAX_DELAY);
+            }
+
+            // Update unread badge in bnav
+            const badge = document.getElementById('unread-badge');
+            if (badge) {
+                badge.style.display = (data.unread_count > 0) ? 'block' : 'none';
+            }
+
+        } catch (e) { console.error("Polling error:", e); }
+        
+        pollTimeout = setTimeout(runPollingStep, currentPollDelay);
+    }
+    // -------------------
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();

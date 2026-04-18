@@ -30,7 +30,8 @@
                 href="{% url 'message-center' %}">
                 <i class="bi bi-chat-dots-fill"></i>
                 {% if chat_unread_count > 0 %}
-                <span class="position-absolute bg-danger border border-2 border-dark rounded-circle"
+                <span id="unread-badge" 
+                    class="position-absolute bg-danger border border-2 border-dark rounded-circle"
                     style="top: 15px; right: 15px; width: 12px; height: 12px;">
                 </span>
                 {% endif %}
