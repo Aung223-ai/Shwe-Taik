@@ -8,9 +8,25 @@
             <div class="bg-danger bg-opacity-10 p-2 rounded-circle me-3">
                 <i class="bi bi-chat-dots-fill text-danger fs-4"></i>
             </div>
-            <h4 class="fw-bold mb-0">Customer Chats</h4>
+            <h4 class="fw-bold mb-0">{% if user_role == 'customer' %}Support Center{% else %}Customer Chats{% endif %}</h4>
         </div>
 
+        {% if user_role == 'customer' %}
+        <div class="card rounded-5 shadow-sm border-0 overflow-hidden bg-white mb-4">
+            <div class="card-body p-5 text-center">
+                <div class="bg-danger bg-opacity-10 p-4 rounded-circle d-inline-block mb-4">
+                    <i class="bi bi-headset text-danger display-4"></i>
+                </div>
+                <h3 class="fw-bold mb-3">Need Assistance?</h3>
+                <p class="text-muted fs-5 mb-4">Chat directly with our support team for any inquiries about products or orders.</p>
+                <a href="{% url 'messages' %}" class="btn btn-danger btn-lg rounded-5 px-5 py-3 fw-bold shadow-sm haptic-btn">
+                    <i class="bi bi-chat-fill me-2"></i> Chat with Staff
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if user_role != 'customer' %}
         <div class="card rounded-5 shadow-sm border-0 overflow-hidden bg-white mb-4">
             <div class="list-group list-group-flush">
                 {% if customers %}
@@ -43,6 +59,7 @@
                 {% endif %}
             </div>
         </div>
+        {% endif %}
 
         {% if show_staff_admin %}
         <div class="mb-4">

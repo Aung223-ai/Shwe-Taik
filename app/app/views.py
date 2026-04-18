@@ -457,8 +457,11 @@ def message_center_view(request):
         context['customers'] = customer_threads
         context['show_staff_admin'] = True
     else:
-        thread = Message.objects.filter(channel='support', customer=user).order_by('-created_at')[:5]
-        context['recent_messages'] = thread
+        # Customer အတွက် Live Chat UI သို့ တိုက်ရိုက် သွားစေခြင်း သို့မဟုတ် Thread အပြည့်အစုံပြခြင်း
+        thread = Message.objects.filter(channel='support', customer=user).order_by('created_at')
+        context['thread'] = thread
+        context['customer_id'] = user.id
+        context['is_staff_view'] = False
     return render(request, 'app/message_center.html', context)
 
 

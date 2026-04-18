@@ -12,10 +12,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return
 
         self.customer_id = self.scope['url_route']['kwargs'].get('customer_id')
+        
+        # အကယ်၍ URL မှာ customer_id မပါဘဲ customer user ဖြစ်နေလျှင် ၎င်း၏ ID ကို သုံးမည်
+        if not self.customer_id and not (self.user.is_staff or self.user.is_superuser):
+            self.customer_id = self.user.id
+
         if self.customer_id:
             self.room_group_name = f'chat_support_{self.customer_id}'
         else:
-            self.room_group_name = 'chat_staff_admin'
+            self.room_group_name = 'chat_staff_admin' # Staff-only internal chat
 
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
@@ -75,7 +80,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def save_message(self, text):
         customer = None
         if self.customer_id:
-            customer = User.objects.get(id=self.customer_id)
+            try:
+                customer = User.objects.get(id=self.customer_id)
+            except User.DoesNotExist:
+                pass
             
         return Message.objects.create(
             user=self.user,
